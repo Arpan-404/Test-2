@@ -48,10 +48,8 @@
     <main class="main">
         <!-- Home Page -->
         <div class="page active" id="homePage">
-            <!-- ✅ UPDATED: Hero Banner - Images Only, No Videos -->
-            <section class="hero" id="heroSection">
-                <!-- No loading indicator needed for images -->
-            </section>
+            <!-- Hero Banner (2:1 Aspect Ratio) -->
+            <section class="hero" id="heroSection"></section>
 
             <!-- Booking Section -->
             <section class="booking-section">
@@ -89,7 +87,7 @@
                 <a href="#" class="view-all-btn" onclick="showPage('services')">View All Services</a>
             </section>
 
-            <!-- ✅ UPDATED: Products Preview Section with Profile Photos and View Buttons -->
+            <!-- Products Preview Section -->
             <section class="products-preview">
                 <h2 class="section-title">Our Products</h2>
                 <div class="products-preview-grid" id="productsPreview">
@@ -103,7 +101,7 @@
             </section>
         </div>
 
-        <!-- Other pages remain the same... -->
+        <!-- Doctors Page -->
         <div class="page" id="doctorsPage">
             <button class="back-btn" onclick="showPage('home')">← Back</button>
             <div class="page-header">
@@ -112,6 +110,7 @@
             <div class="doctors-container" id="doctorsContainer"></div>
         </div>
 
+        <!-- Services Page -->
         <div class="page" id="servicesPage">
             <button class="back-btn" onclick="showPage('home')">← Back</button>
             <div class="page-header">
@@ -120,6 +119,7 @@
             <div class="services-container" id="servicesContainer"></div>
         </div>
 
+        <!-- Products Page -->
         <div class="page" id="productsPage">
             <button class="back-btn" onclick="showPage('home')">← Back</button>
             <div class="page-header">
@@ -129,7 +129,33 @@
         </div>
     </main>
 
-    <!-- All modals remain the same... -->
+    <!-- Product View Modal (Internal) -->
+    <div id="productViewModal" class="product-view-modal">
+        <div class="product-view-content">
+            <span class="close" onclick="closeProductView()">&times;</span>
+            <div class="product-view-layout">
+                <!-- Product Images Gallery -->
+                <div class="product-images-section">
+                    <div class="main-product-image" id="mainProductImage"></div>
+                    <div class="product-image-thumbnails" id="productImageThumbnails"></div>
+                </div>
+                
+                <!-- Product Information -->
+                <div class="product-info-section">
+                    <h2 id="productViewName"></h2>
+                    <div class="product-view-price" id="productViewPrice"></div>
+                    <div class="product-view-description" id="productViewDescription"></div>
+                    <div class="product-view-actions">
+                        <button class="btn btn-primary btn-large" id="productViewBuyBtn">
+                            🛒 Buy Now on WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Details Modal -->
     <div id="doctorDetailsModal" class="doctor-details">
         <div class="doctor-details-content">
             <span class="close" onclick="closeDoctorDetails()">&times;</span>
@@ -142,6 +168,7 @@
         </div>
     </div>
 
+    <!-- Admin Login Modal -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAdminModal()">&times;</span>
@@ -160,6 +187,7 @@
         </div>
     </div>
 
+    <!-- Service Details Modal -->
     <div id="serviceDetailsModal" class="service-details">
         <div class="service-details-content">
             <span class="close" onclick="closeServiceDetails()">&times;</span>
@@ -168,6 +196,7 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
     <div id="editModal" class="edit-modal">
         <div class="edit-modal-content">
             <span class="close" onclick="closeEditModal()">&times;</span>
@@ -176,7 +205,30 @@
         </div>
     </div>
 
-    <!-- Enhanced Admin Dashboard -->
+    <!-- Sub-Services Management Modal -->
+    <div id="subServicesModal" class="sub-services-modal">
+        <div class="sub-services-content">
+            <span class="close" onclick="closeSubServicesModal()">&times;</span>
+            <h3 id="subServicesTitle">Manage Sub-Services</h3>
+            <div class="sub-services-list" id="subServicesList"></div>
+            <div class="add-sub-service">
+                <h4>Add New Sub-Service</h4>
+                <div class="form-row two-col">
+                    <div class="form-field">
+                        <label>Test/Treatment Name</label>
+                        <input type="text" id="newSubServiceName" placeholder="Enter test name">
+                    </div>
+                    <div class="form-field">
+                        <label>Price</label>
+                        <input type="text" id="newSubServicePrice" placeholder="₹000">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addSubService()">Add Sub-Service</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
     <div class="admin-dashboard" id="adminDashboard">
         <header class="admin-header">
             <h2>Admin Dashboard</h2>
@@ -191,6 +243,7 @@
         </nav>
 
         <div class="admin-content">
+            <!-- Clinic Info Panel -->
             <div class="tab-panel active" id="clinic-panel">
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -249,16 +302,19 @@
                 </div>
             </div>
 
+            <!-- Doctors Panel -->
             <div class="tab-panel" id="doctors-panel">
                 <button class="add-btn" onclick="addNewDoctor()">Add New Doctor</button>
                 <div class="item-list" id="doctorsAdminList"></div>
             </div>
 
+            <!-- Services Panel -->
             <div class="tab-panel" id="services-panel">
                 <button class="add-btn" onclick="addNewService()">Add New Service</button>
                 <div class="item-list" id="servicesAdminList"></div>
             </div>
 
+            <!-- Products Panel -->
             <div class="tab-panel" id="products-panel">
                 <button class="add-btn" onclick="addNewProduct()">Add New Product</button>
                 <div class="item-list" id="productsAdminList"></div>
