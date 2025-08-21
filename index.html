@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physio - The Therapeutic Moves</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="style" href="style.css">
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
+    <link rel="dns-prefetch" href="https://firebaseapp.com">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="logo">
+            <img src="https://via.placeholder.com/32x32/2c8577/ffffff?text=LOGO" alt="Logo" class="logo-img" id="clinicLogo" loading="lazy">
+            <span id="clinicName">Physio - The Therapeutic Moves</span>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="close-menu" onclick="toggleMenu()">&times;</button>
+        <ul>
+            <li onclick="showPage('home')">Home</li>
+            <li onclick="showPage('doctors')">Doctors</li>
+            <li onclick="showPage('services')">Services</li>
+            <li onclick="showPage('products')">Products</li>
+            <li onclick="showAdminLogin()">Admin Login</li>
+        </ul>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Home Page -->
+        <div class="page active" id="homePage">
+            <!-- ✅ UPDATED: Hero Banner - Images Only, No Videos -->
+            <section class="hero" id="heroSection">
+                <!-- No loading indicator needed for images -->
+            </section>
+
+            <!-- Booking Section -->
+            <section class="booking-section">
+                <div class="booking-content">
+                    <h1 id="heroTitle">Therapeutic Moves</h1>
+                    <p class="tagline" id="heroTagline">"We add life in your days."</p>
+                    <button class="btn" onclick="bookAppointment()">Book Appointment</button>
+                    <div class="phone-number" id="phoneNumber">📞 +91 9641568109</div>
+                </div>
+            </section>
+
+            <!-- Doctors Preview Section -->
+            <section class="doctors-preview">
+                <h2 class="section-title">Our Expert Team</h2>
+                <div class="doctors-preview-container" id="doctorsPreview">
+                    <div class="skeleton-loader" id="doctorsSkeleton">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+                <a href="#" class="view-all-btn" onclick="showPage('doctors')">View All Doctors</a>
+            </section>
+
+            <!-- Services Preview Section -->
+            <section class="services-preview">
+                <h2 class="section-title">Our Services</h2>
+                <div class="services-preview-grid" id="servicesPreview">
+                    <div class="skeleton-loader services-skeleton" id="servicesSkeleton">
+                        <div class="skeleton-service-card"></div>
+                        <div class="skeleton-service-card"></div>
+                        <div class="skeleton-service-card"></div>
+                    </div>
+                </div>
+                <a href="#" class="view-all-btn" onclick="showPage('services')">View All Services</a>
+            </section>
+
+            <!-- ✅ UPDATED: Products Preview Section with Profile Photos and View Buttons -->
+            <section class="products-preview">
+                <h2 class="section-title">Our Products</h2>
+                <div class="products-preview-grid" id="productsPreview">
+                    <div class="skeleton-loader products-skeleton" id="productsSkeleton">
+                        <div class="skeleton-product-card"></div>
+                        <div class="skeleton-product-card"></div>
+                        <div class="skeleton-product-card"></div>
+                    </div>
+                </div>
+                <a href="#" class="view-all-btn" onclick="showPage('products')">View All Products</a>
+            </section>
+        </div>
+
+        <!-- Other pages remain the same... -->
+        <div class="page" id="doctorsPage">
+            <button class="back-btn" onclick="showPage('home')">← Back</button>
+            <div class="page-header">
+                <h1 class="page-title">Our Doctors</h1>
+            </div>
+            <div class="doctors-container" id="doctorsContainer"></div>
+        </div>
+
+        <div class="page" id="servicesPage">
+            <button class="back-btn" onclick="showPage('home')">← Back</button>
+            <div class="page-header">
+                <h1 class="page-title">Our Services</h1>
+            </div>
+            <div class="services-container" id="servicesContainer"></div>
+        </div>
+
+        <div class="page" id="productsPage">
+            <button class="back-btn" onclick="showPage('home')">← Back</button>
+            <div class="page-header">
+                <h1 class="page-title">Our Products</h1>
+            </div>
+            <div class="products-container" id="productsContainer"></div>
+        </div>
+    </main>
+
+    <!-- All modals remain the same... -->
+    <div id="doctorDetailsModal" class="doctor-details">
+        <div class="doctor-details-content">
+            <span class="close" onclick="closeDoctorDetails()">&times;</span>
+            <div class="doctor-avatar" id="modalDoctorAvatar">👨‍⚕️</div>
+            <h2 id="modalDoctorName" style="color: #2c8577; margin-bottom: 0.5rem;"></h2>
+            <p id="modalDoctorQualification" style="color: #666; margin-bottom: 0.5rem;"></p>
+            <p id="modalDoctorFees" style="color: #2c8577; font-weight: 600; font-size: 1.2rem; margin-bottom: 1rem;"></p>
+            <p id="modalDoctorDetails" style="color: #666; margin-bottom: 1.5rem;"></p>
+            <button class="btn btn-primary" id="modalBookingBtn">Book Appointment</button>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminModal()">&times;</span>
+            <h2 style="color: #2c8577; margin-bottom: 1rem;">Admin Login</h2>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="serviceDetailsModal" class="service-details">
+        <div class="service-details-content">
+            <span class="close" onclick="closeServiceDetails()">&times;</span>
+            <h2 id="serviceDetailsTitle" style="color: #2c8577; margin-bottom: 1rem;"></h2>
+            <div id="serviceDetailsContent"></div>
+        </div>
+    </div>
+
+    <div id="editModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h3 id="editModalTitle">Edit Item</h3>
+            <div id="editModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Enhanced Admin Dashboard -->
+    <div class="admin-dashboard" id="adminDashboard">
+        <header class="admin-header">
+            <h2>Admin Dashboard</h2>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </header>
+
+        <nav class="admin-tabs">
+            <button class="admin-tab active" data-tab="clinic">Clinic Info</button>
+            <button class="admin-tab" data-tab="doctors">Doctors</button>
+            <button class="admin-tab" data-tab="services">Services</button>
+            <button class="admin-tab" data-tab="products">Products</button>
+        </nav>
+
+        <div class="admin-content">
+            <div class="tab-panel active" id="clinic-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalDoctors">3</div>
+                        <div class="stat-label">Total Doctors</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalServices">3</div>
+                        <div class="stat-label">Total Services</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalProducts">3</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Clinic Information</h3>
+                    <div class="form-row two-col">
+                        <div class="form-field">
+                            <label>Clinic Name</label>
+                            <input type="text" id="adminClinicName" placeholder="Enter clinic name">
+                        </div>
+                        <div class="form-field">
+                            <label>Phone</label>
+                            <input type="tel" id="adminPhone" placeholder="Enter phone number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Tagline</label>
+                            <input type="text" id="adminTagline" placeholder="Enter tagline">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Email</label>
+                            <input type="email" id="adminEmail" placeholder="Enter email address">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Logo URL (imgbb, etc.)</label>
+                            <input type="url" id="adminLogoUrl" placeholder="https://i.ibb.co/..." oninput="previewImage(this, 'logoPreview')">
+                            <img id="logoPreview" class="image-preview" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Hero Banner Image URL (imgbb, etc.)</label>
+                            <input type="url" id="bannerImageUrl" placeholder="https://i.ibb.co/..." oninput="previewImage(this, 'bannerPreview')">
+                            <img id="bannerPreview" class="image-preview" style="display: none;">
+                        </div>
+                    </div>
+                    <button class="update-btn" onclick="updateClinicInfo()">Update Clinic Info</button>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="doctors-panel">
+                <button class="add-btn" onclick="addNewDoctor()">Add New Doctor</button>
+                <div class="item-list" id="doctorsAdminList"></div>
+            </div>
+
+            <div class="tab-panel" id="services-panel">
+                <button class="add-btn" onclick="addNewService()">Add New Service</button>
+                <div class="item-list" id="servicesAdminList"></div>
+            </div>
+
+            <div class="tab-panel" id="products-panel">
+                <button class="add-btn" onclick="addNewProduct()">Add New Product</button>
+                <div class="item-list" id="productsAdminList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
