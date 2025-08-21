@@ -1,4 +1,6 @@
-// Firebase Configuration
+// ================================
+// FIREBASE CONFIGURATION
+// ================================
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
 import { getDatabase, ref, get, set, push, remove, update, onValue } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js';
 import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
@@ -18,34 +20,55 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
 
-// ✅ SIMPLIFIED: 2-second loading timeout
-setTimeout(() => {
-    console.log('Hiding loading overlay after 2 seconds');
-    hideLoadingOverlay();
-}, 2000);
-
+// ================================
+// ✅ FIXED LOADING MANAGEMENT
+// ================================
 window.loadingState = {
     isLoading: true
 };
 
+// ✅ Force hide loading after 3 seconds (increased from 2)
+setTimeout(() => {
+    console.log('✅ Force hiding loading overlay after 3 seconds');
+    hideLoadingOverlay();
+}, 3000);
+
 function hideLoadingOverlay() {
+    console.log('🔄 Attempting to hide loading overlay...');
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) {
+        console.log('✅ Loading overlay found, hiding now');
         overlay.classList.add('hidden');
+        overlay.style.opacity = '0';
         setTimeout(() => {
             overlay.style.display = 'none';
+            console.log('✅ Loading overlay completely hidden');
         }, 500);
         window.loadingState.isLoading = false;
+    } else {
+        console.error('❌ Loading overlay element not found!');
     }
 }
 
 function hideSkeletons() {
-    document.getElementById('doctorsSkeleton')?.classList.add('hidden');
-    document.getElementById('servicesSkeleton')?.classList.add('hidden');
-    document.getElementById('productsSkeleton')?.classList.add('hidden');
+    console.log('🔄 Hiding skeleton loaders...');
+    const elements = [
+        document.getElementById('doctorsSkeleton'),
+        document.getElementById('servicesSkeleton'),
+        document.getElementById('productsSkeleton')
+    ];
+    
+    elements.forEach(element => {
+        if (element) {
+            element.classList.add('hidden');
+        }
+    });
+    console.log('✅ Skeletons hidden');
 }
 
-// ✅ UPDATED: Products with profile photos and external links
+// ================================
+// SITE DATA STRUCTURE
+// ================================
 window.siteData = {
     hero: {
         clinicName: "Physio - The Therapeutic Moves",
@@ -90,9 +113,9 @@ window.siteData = {
             icon: "🏃‍♂️",
             bannerImageUrl: "",
             tests: [
-                { name: "Movement Assessment", price: "₹300" },
-                { name: "Strength Testing", price: "₹250" },
-                { name: "Range of Motion Test", price: "₹200" }
+                { id: 1, name: "Movement Assessment", price: "₹300" },
+                { id: 2, name: "Strength Testing", price: "₹250" },
+                { id: 3, name: "Range of Motion Test", price: "₹200" }
             ]
         },
         {
@@ -102,9 +125,9 @@ window.siteData = {
             icon: "💊",
             bannerImageUrl: "",
             tests: [
-                { name: "Pain Assessment", price: "₹400" },
-                { name: "Trigger Point Therapy", price: "₹600" },
-                { name: "TENS Therapy", price: "₹500" }
+                { id: 4, name: "Pain Assessment", price: "₹400" },
+                { id: 5, name: "Trigger Point Therapy", price: "₹600" },
+                { id: 6, name: "TENS Therapy", price: "₹500" }
             ]
         },
         {
@@ -114,9 +137,9 @@ window.siteData = {
             icon: "⚽",
             bannerImageUrl: "",
             tests: [
-                { name: "Sports Injury Assessment", price: "₹500" },
-                { name: "Performance Analysis", price: "₹700" },
-                { name: "Return to Sport Testing", price: "₹600" }
+                { id: 7, name: "Sports Injury Assessment", price: "₹500" },
+                { id: 8, name: "Performance Analysis", price: "₹700" },
+                { id: 9, name: "Return to Sport Testing", price: "₹600" }
             ]
         }
     ],
@@ -124,31 +147,36 @@ window.siteData = {
         {
             id: 1,
             name: "Lumbar Support Belt",
-            description: "Medical grade lumbar support for back pain relief. Provides excellent support for lower back during work and exercise.",
+            description: "Medical grade lumbar support for back pain relief. Provides excellent support for lower back during work and exercise. Made with breathable materials for all-day comfort. Features adjustable straps and ergonomic design for maximum effectiveness.",
             price: "₹1200",
-            profilePhoto: "", // ✅ NEW: Profile photo for the product
-            externalLink: "" // ✅ NEW: External link (Amazon, etc.)
+            profilePhoto: "",
+            images: []
         },
         {
             id: 2,
             name: "Knee Support Brace",
-            description: "Adjustable knee brace for injury support and prevention. Features adjustable straps and compression padding.",
+            description: "Adjustable knee brace for injury support and prevention. Features adjustable straps and compression padding. Suitable for sports and daily activities. Provides excellent stability and comfort during movement and recovery.",
             price: "₹800",
             profilePhoto: "",
-            externalLink: ""
+            images: []
         },
         {
             id: 3,
             name: "Resistance Bands Set",
-            description: "Professional resistance bands for rehabilitation exercises. Includes 5 different resistance levels with accessories.",
+            description: "Professional resistance bands for rehabilitation exercises. Includes 5 different resistance levels with door anchor, handles, and ankle straps. Perfect for home workouts and physical therapy sessions. Complete set for comprehensive training.",
             price: "₹600",
             profilePhoto: "",
-            externalLink: ""
+            images: []
         }
     ]
 };
 
-// URL validation functions
+// Global variable for current service being managed
+window.currentServiceId = null;
+
+// ================================
+// UTILITY FUNCTIONS
+// ================================
 function isValidUrl(string) {
     try {
         new URL(string);
@@ -165,14 +193,28 @@ function isImageUrl(url) {
            url.includes('images.');
 }
 
-// Firebase listener
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ================================
+// FIREBASE LISTENERS
+// ================================
 const siteRef = ref(database, 'site');
 onValue(siteRef, (snapshot) => {
     try {
         if (snapshot.exists()) {
             const data = snapshot.val();
             window.siteData = { ...window.siteData, ...data };
-            console.log('Firebase data loaded');
+            console.log('✅ Firebase data loaded successfully');
         }
         
         renderSite();
@@ -181,23 +223,27 @@ onValue(siteRef, (snapshot) => {
         updateHeroBackground();
         hideSkeletons();
     } catch (error) {
-        console.error('Firebase error:', error);
+        console.error('❌ Firebase error:', error);
         renderSite();
         updateStats();
         hideSkeletons();
     }
 }, (error) => {
-    console.error('Firebase permission error:', error);
+    console.error('❌ Firebase permission error:', error);
     renderSite();
     updateStats();
     hideSkeletons();
 });
 
-// Scroll handler
+// ================================
+// SCROLL HANDLER
+// ================================
 let lastScrollTop = 0;
 const header = document.getElementById('header');
 
-window.addEventListener('scroll', () => {
+const handleScroll = debounce(() => {
+    if (window.loadingState.isLoading) return;
+    
     let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
     if (scrollTop > lastScrollTop && scrollTop > 80) {
@@ -207,9 +253,13 @@ window.addEventListener('scroll', () => {
     }
     
     lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-}, { passive: true });
+}, 10);
 
-// Page navigation
+window.addEventListener('scroll', handleScroll, { passive: true });
+
+// ================================
+// PAGE NAVIGATION
+// ================================
 window.currentPage = 'home';
 
 window.showPage = function(pageId) {
@@ -224,10 +274,12 @@ window.showPage = function(pageId) {
         toggleMenu();
     }
     
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Admin Dashboard Tab Navigation
+// ================================
+// ADMIN FUNCTIONS
+// ================================
 function initAdminTabs() {
     const tabs = document.querySelectorAll('.admin-tab');
     const panels = document.querySelectorAll('.tab-panel');
@@ -243,7 +295,6 @@ function initAdminTabs() {
     });
 }
 
-// Image Preview Function
 window.previewImage = function(input, previewId) {
     const preview = document.getElementById(previewId);
     if (input.value && isImageUrl(input.value)) {
@@ -257,7 +308,9 @@ window.previewImage = function(input, previewId) {
     }
 }
 
-// Load site data
+// ================================
+// DATA LOADING & UPDATING
+// ================================
 async function loadSiteData() {
     try {
         const snapshot = await get(ref(database, 'site'));
@@ -274,14 +327,12 @@ async function loadSiteData() {
     hideSkeletons();
 }
 
-// Update Statistics
 function updateStats() {
     document.getElementById('totalDoctors').textContent = window.siteData.doctors?.length || 0;
     document.getElementById('totalServices').textContent = window.siteData.services?.length || 0;
     document.getElementById('totalProducts').textContent = window.siteData.products?.length || 0;
 }
 
-// Update admin form with current data
 function updateAdminForm() {
     if (window.siteData.hero) {
         const hero = window.siteData.hero;
@@ -306,7 +357,6 @@ function updateAdminForm() {
     }
 }
 
-// ✅ UPDATED: Hero background - images only, no videos
 function updateHeroBackground() {
     const heroSection = document.getElementById('heroSection');
     
@@ -320,7 +370,6 @@ function updateHeroBackground() {
     }
 }
 
-// UPDATE FUNCTION with hero banner support
 window.updateClinicInfo = async function() {
     const heroData = {
         clinicName: document.getElementById('adminClinicName').value.trim(),
@@ -352,7 +401,9 @@ window.updateClinicInfo = async function() {
     }
 }
 
-// Render site content
+// ================================
+// RENDER FUNCTIONS
+// ================================
 function renderSite() {
     renderHero();
     renderDoctorsPreview();
@@ -373,7 +424,6 @@ function renderHero() {
     }
 }
 
-// Render doctors preview
 function renderDoctorsPreview() {
     const container = document.getElementById('doctorsPreview');
     if (!container) return;
@@ -397,7 +447,6 @@ function renderDoctorsPreview() {
     });
 }
 
-// Render services preview
 function renderServicesPreview() {
     const container = document.getElementById('servicesPreview');
     if (!container) return;
@@ -422,7 +471,6 @@ function renderServicesPreview() {
     });
 }
 
-// ✅ UPDATED: Products preview with profile photos and View buttons
 function renderProductsPreview() {
     const container = document.getElementById('productsPreview');
     if (!container) return;
@@ -432,7 +480,7 @@ function renderProductsPreview() {
         const productCard = document.createElement('div');
         productCard.className = 'product-preview-card';
         
-        // ✅ Profile photo display
+        // Profile photo display
         let photoContent = '';
         if (product.profilePhoto) {
             photoContent = `<div class="product-profile-photo">
@@ -449,8 +497,8 @@ function renderProductsPreview() {
             <div class="product-preview-title">${product.name}</div>
             <div class="product-preview-price">${product.price}</div>
             <div class="product-preview-buttons">
-                <button class="btn btn-secondary" onclick="viewProduct('${product.externalLink || '#'}')">
-                    👁️ View
+                <button class="btn btn-secondary" onclick="viewProductInternal(${product.id})">
+                    View
                 </button>
                 <button class="btn btn-primary" onclick="buyProduct('${product.name}')">
                     🛒 Buy
@@ -461,16 +509,71 @@ function renderProductsPreview() {
     });
 }
 
-// ✅ NEW: View Product function - opens external link
-window.viewProduct = function(externalLink) {
-    if (externalLink && externalLink !== '#' && isValidUrl(externalLink)) {
-        window.open(externalLink, '_blank');
+// ================================
+// PRODUCT VIEW FUNCTIONS
+// ================================
+window.viewProductInternal = function(productId) {
+    const product = window.siteData.products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const modal = document.getElementById('productViewModal');
+    const mainImage = document.getElementById('mainProductImage');
+    const thumbnails = document.getElementById('productImageThumbnails');
+    
+    // Set product information
+    document.getElementById('productViewName').textContent = product.name;
+    document.getElementById('productViewPrice').textContent = product.price;
+    document.getElementById('productViewDescription').textContent = product.description;
+    
+    // Set buy button action
+    document.getElementById('productViewBuyBtn').onclick = () => {
+        buyProduct(product.name);
+        closeProductView();
+    };
+    
+    // Setup image display
+    if (product.images && product.images.length > 0) {
+        // Show first image in main display
+        const firstImage = product.images[0];
+        mainImage.innerHTML = `<img src="${firstImage}" alt="${product.name}">`;
+        
+        // Create thumbnails for all images
+        thumbnails.innerHTML = '';
+        product.images.forEach((imageUrl, index) => {
+            const thumbnail = document.createElement('div');
+            thumbnail.className = `product-thumbnail ${index === 0 ? 'active' : ''}`;
+            thumbnail.innerHTML = `<img src="${imageUrl}" alt="${product.name}">`;
+            
+            thumbnail.onclick = () => {
+                // Update main image
+                mainImage.innerHTML = `<img src="${imageUrl}" alt="${product.name}">`;
+                
+                // Update active thumbnail
+                thumbnails.querySelectorAll('.product-thumbnail').forEach(t => t.classList.remove('active'));
+                thumbnail.classList.add('active');
+            };
+            
+            thumbnails.appendChild(thumbnail);
+        });
+    } else if (product.profilePhoto) {
+        // Use profile photo as main image if no gallery images
+        mainImage.innerHTML = `<img src="${product.profilePhoto}" alt="${product.name}">`;
+        thumbnails.innerHTML = '';
     } else {
-        alert('Product link not available');
+        mainImage.innerHTML = '<div style="color: #999; font-size: 1.5rem; text-align: center;">No images available</div>';
+        thumbnails.innerHTML = '';
     }
+    
+    modal.style.display = 'block';
 }
 
-// Render full doctors page
+window.closeProductView = function() {
+    document.getElementById('productViewModal').style.display = 'none';
+}
+
+// ================================
+// RENDER FULL PAGES
+// ================================
 function renderDoctors() {
     const container = document.getElementById('doctorsContainer');
     if (!container) return;
@@ -498,7 +601,6 @@ function renderDoctors() {
     });
 }
 
-// Render full services page
 function renderServices() {
     const container = document.getElementById('servicesContainer');
     if (!container) return;
@@ -524,7 +626,6 @@ function renderServices() {
     });
 }
 
-// ✅ UPDATED: Render full products page with profile photos and View buttons
 function renderProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
@@ -552,8 +653,8 @@ function renderProducts() {
             <div class="product-description">${product.description.substring(0, 100)}...</div>
             <div class="product-price">${product.price}</div>
             <div class="product-buttons">
-                <button class="btn btn-secondary" onclick="viewProduct('${product.externalLink || '#'}')">
-                    👁️ View Product
+                <button class="btn btn-secondary" onclick="viewProductInternal(${product.id})">
+                    View Product
                 </button>
                 <button class="btn btn-primary" onclick="buyProduct('${product.name}')">
                     🛒 Buy Now on WhatsApp
@@ -564,7 +665,9 @@ function renderProducts() {
     });
 }
 
-// Render Admin Lists
+// ================================
+// RENDER ADMIN LISTS
+// ================================
 function renderAdminLists() {
     renderDoctorsAdminList();
     renderServicesAdminList();
@@ -599,14 +702,16 @@ function renderServicesAdminList() {
     container.innerHTML = '';
     
     window.siteData.services?.forEach(service => {
+        const testsCount = service.tests?.length || 0;
         const item = document.createElement('div');
         item.className = 'item';
         item.innerHTML = `
             <div class="item-info">
                 <h4>${service.title}</h4>
-                <p>${service.description}</p>
+                <p>${service.description} (${testsCount} sub-services)</p>
             </div>
-            <div class="item-actions">
+            <div class="item-actions-extended">
+                <button class="manage-sub-services-btn" onclick="manageSubServices(${service.id})">Sub-Services</button>
                 <button class="edit-btn" onclick="editService(${service.id})">Edit</button>
                 <button class="delete-btn" onclick="deleteService(${service.id})">Delete</button>
             </div>
@@ -615,20 +720,19 @@ function renderServicesAdminList() {
     });
 }
 
-// ✅ UPDATED: Products admin list
 function renderProductsAdminList() {
     const container = document.getElementById('productsAdminList');
     if (!container) return;
     container.innerHTML = '';
     
     window.siteData.products?.forEach(product => {
-        const hasLink = product.externalLink ? '🔗' : '';
+        const imagesCount = product.images?.length || 0;
         const item = document.createElement('div');
         item.className = 'item';
         item.innerHTML = `
             <div class="item-info">
-                <h4>${product.name} ${hasLink}</h4>
-                <p>${product.price}</p>
+                <h4>${product.name}</h4>
+                <p>${product.price} - ${imagesCount} images</p>
             </div>
             <div class="item-actions">
                 <button class="edit-btn" onclick="editProduct(${product.id})">Edit</button>
@@ -639,7 +743,121 @@ function renderProductsAdminList() {
     });
 }
 
-// Management functions
+// ================================
+// SUB-SERVICES MANAGEMENT
+// ================================
+window.manageSubServices = function(serviceId) {
+    const service = window.siteData.services.find(s => s.id === serviceId);
+    if (!service) return;
+    
+    window.currentServiceId = serviceId;
+    
+    document.getElementById('subServicesTitle').textContent = `Manage Sub-Services: ${service.title}`;
+    renderSubServicesList(service.tests || []);
+    document.getElementById('subServicesModal').style.display = 'block';
+}
+
+function renderSubServicesList(tests) {
+    const container = document.getElementById('subServicesList');
+    container.innerHTML = '';
+    
+    if (tests.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 2rem;">No sub-services available. Add one below.</p>';
+        return;
+    }
+    
+    tests.forEach((test, index) => {
+        const testItem = document.createElement('div');
+        testItem.className = 'sub-service-item';
+        testItem.innerHTML = `
+            <div class="sub-service-info">
+                <div class="sub-service-name">${test.name}</div>
+                <div class="sub-service-price">${test.price}</div>
+            </div>
+            <div class="sub-service-actions">
+                <button class="edit-sub-service" onclick="editSubService(${index})">Edit</button>
+                <button class="delete-sub-service" onclick="deleteSubService(${index})">Delete</button>
+            </div>
+        `;
+        container.appendChild(testItem);
+    });
+}
+
+window.addSubService = function() {
+    const name = document.getElementById('newSubServiceName').value.trim();
+    const price = document.getElementById('newSubServicePrice').value.trim();
+    
+    if (!name || !price) {
+        alert('Please enter both name and price');
+        return;
+    }
+    
+    const service = window.siteData.services.find(s => s.id === window.currentServiceId);
+    if (!service.tests) {
+        service.tests = [];
+    }
+    
+    service.tests.push({ 
+        id: Date.now(), 
+        name, 
+        price: price.startsWith('₹') ? price : `₹${price}`
+    });
+    
+    // Update in Firebase
+    updateServiceInFirebase(service);
+    
+    // Clear form and refresh list
+    document.getElementById('newSubServiceName').value = '';
+    document.getElementById('newSubServicePrice').value = '';
+    renderSubServicesList(service.tests);
+}
+
+window.editSubService = function(index) {
+    const service = window.siteData.services.find(s => s.id === window.currentServiceId);
+    const test = service.tests[index];
+    
+    const newName = prompt('Edit test name:', test.name);
+    const newPrice = prompt('Edit price:', test.price);
+    
+    if (newName && newPrice) {
+        service.tests[index] = { 
+            ...test, 
+            name: newName, 
+            price: newPrice.startsWith('₹') ? newPrice : `₹${newPrice}`
+        };
+        updateServiceInFirebase(service);
+        renderSubServicesList(service.tests);
+    }
+}
+
+window.deleteSubService = function(index) {
+    if (confirm('Are you sure you want to delete this sub-service?')) {
+        const service = window.siteData.services.find(s => s.id === window.currentServiceId);
+        service.tests.splice(index, 1);
+        updateServiceInFirebase(service);
+        renderSubServicesList(service.tests);
+        renderServicesAdminList(); // Refresh count
+    }
+}
+
+async function updateServiceInFirebase(service) {
+    try {
+        await update(ref(database, 'site'), { services: window.siteData.services });
+        console.log('Service updated successfully');
+    } catch (error) {
+        console.error('Error updating service:', error);
+        alert('Error updating service');
+    }
+}
+
+window.closeSubServicesModal = function() {
+    document.getElementById('subServicesModal').style.display = 'none';
+    window.currentServiceId = null;
+}
+
+// ================================
+// MANAGEMENT FUNCTIONS
+// ================================
 window.addNewDoctor = function() {
     showEditModal('doctor', null);
 }
@@ -697,7 +915,9 @@ window.deleteProduct = async function(id) {
     }
 }
 
-// ✅ UPDATED: Edit Modal with profile photo and external link support
+// ================================
+// EDIT MODAL
+// ================================
 function showEditModal(type, item) {
     const modal = document.getElementById('editModal');
     const title = document.getElementById('editModalTitle');
@@ -773,6 +993,7 @@ function showEditModal(type, item) {
             `;
             break;
         case 'product':
+            const imagesValue = item && item.images ? item.images.join(', ') : '';
             formHtml = `
                 <div class="form-row">
                     <div class="form-field">
@@ -794,17 +1015,17 @@ function showEditModal(type, item) {
                 </div>
                 <div class="form-row">
                     <div class="form-field">
-                        <label>✅ Profile Photo URL (imgbb, etc.)</label>
+                        <label>Profile Photo URL (imgbb, etc.)</label>
                         <input type="url" id="editProfilePhoto" value="${item ? item.profilePhoto || '' : ''}" oninput="previewImage(this, 'editProfilePreview')">
                         <img id="editProfilePreview" class="image-preview" style="display: none;">
-                        <small style="color: #666;">Main product photo to display</small>
+                        <small style="color: #666;">Main product photo for cards</small>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-field">
-                        <label>✅ External Link (Amazon, etc.)</label>
-                        <input type="url" id="editExternalLink" value="${item ? item.externalLink || '' : ''}" placeholder="https://amazon.in/product/...">
-                        <small style="color: #666;">Link to Amazon or other e-commerce site</small>
+                        <label>Gallery Images (comma separated URLs)</label>
+                        <textarea id="editProductImages" placeholder="https://i.ibb.co/image1.jpg, https://i.ibb.co/image2.jpg, ..." rows="3">${imagesValue}</textarea>
+                        <small style="color: #666;">Multiple image URLs for product gallery (comma separated)</small>
                     </div>
                 </div>
                 <button class="update-btn" onclick="saveProduct(${item ? item.id : 'null'})">Save Product</button>
@@ -827,7 +1048,9 @@ function showEditModal(type, item) {
     }, 100);
 }
 
-// Save Functions
+// ================================
+// SAVE FUNCTIONS
+// ================================
 window.saveDoctor = async function(id) {
     const doctorData = {
         id: id || Date.now(),
@@ -865,7 +1088,7 @@ window.saveService = async function(id) {
         icon: document.getElementById('editIcon').value,
         description: document.getElementById('editDescription').value,
         bannerImageUrl: document.getElementById('editBannerImageUrl').value,
-        tests: id ? window.siteData.services.find(s => s.id === id).tests : []
+        tests: id ? window.siteData.services.find(s => s.id === id).tests || [] : []
     };
     
     if (id) {
@@ -888,20 +1111,23 @@ window.saveService = async function(id) {
     }
 }
 
-// ✅ UPDATED: Save Product with profile photo and external link
 window.saveProduct = async function(id) {
+    const imagesText = document.getElementById('editProductImages').value;
+    const imagesArray = imagesText ? imagesText.split(',').map(url => url.trim()).filter(Boolean) : [];
+    
     const productData = {
         id: id || Date.now(),
         name: document.getElementById('editProductName').value,
         price: document.getElementById('editPrice').value,
         description: document.getElementById('editProductDescription').value,
         profilePhoto: document.getElementById('editProfilePhoto').value,
-        externalLink: document.getElementById('editExternalLink').value
+        images: imagesArray
     };
     
-    // Validate external link if provided
-    if (productData.externalLink && !isValidUrl(productData.externalLink)) {
-        alert('Please enter a valid external link URL');
+    // Validate image URLs
+    const invalidUrls = imagesArray.filter(url => !isImageUrl(url));
+    if (invalidUrls.length > 0) {
+        alert(`Invalid image URLs detected:\n${invalidUrls.join('\n')}\n\nPlease check the URLs and try again.`);
         return;
     }
     
@@ -918,7 +1144,7 @@ window.saveProduct = async function(id) {
         renderAdminLists();
         renderSite();
         updateStats();
-        alert('Product saved successfully!');
+        alert(`Product saved successfully!\nImages: ${imagesArray.length}`);
     } catch (error) {
         alert('Error saving product');
         console.error(error);
@@ -929,7 +1155,9 @@ window.closeEditModal = function() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-// Global functions
+// ================================
+// GLOBAL FUNCTIONS
+// ================================
 window.toggleMenu = function() {
     const menu = document.getElementById('mobileMenu');
     const overlay = document.getElementById('overlay');
@@ -952,7 +1180,9 @@ window.buyProduct = function(productName) {
     window.open(`https://wa.me/919641568109?text=${message}`, '_blank');
 }
 
-// Doctor details modal functions
+// ================================
+// MODAL FUNCTIONS
+// ================================
 window.showDoctorDetails = function(doctor) {
     document.getElementById('modalDoctorName').textContent = doctor.name;
     document.getElementById('modalDoctorQualification').textContent = doctor.qualification;
@@ -1010,7 +1240,9 @@ window.closeAdminModal = function() {
     document.getElementById('adminModal').style.display = 'none';
 }
 
-// Admin functions
+// ================================
+// ADMIN FUNCTIONS
+// ================================
 document.getElementById('adminLoginForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const username = document.getElementById('username').value;
@@ -1035,15 +1267,21 @@ window.logout = function() {
     document.querySelector('.main').style.display = 'block';
 }
 
-// Initialize the site
+// ================================
+// INITIALIZE SITE
+// ================================
 loadSiteData();
 
-// Close modals when clicking outside
+// ================================
+// MODAL CLICK HANDLERS
+// ================================
 window.onclick = function(event) {
     const adminModal = document.getElementById('adminModal');
     const serviceModal = document.getElementById('serviceDetailsModal');
     const doctorModal = document.getElementById('doctorDetailsModal');
     const editModal = document.getElementById('editModal');
+    const productViewModal = document.getElementById('productViewModal');
+    const subServicesModal = document.getElementById('subServicesModal');
     
     if (event.target == adminModal) {
         adminModal.style.display = 'none';
@@ -1056,5 +1294,11 @@ window.onclick = function(event) {
     }
     if (event.target == editModal) {
         editModal.style.display = 'none';
+    }
+    if (event.target == productViewModal) {
+        closeProductView();
+    }
+    if (event.target == subServicesModal) {
+        closeSubServicesModal();
     }
 }
