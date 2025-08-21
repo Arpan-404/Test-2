@@ -1,3 +1,6 @@
+/* ================================
+   RESET & BASE STYLES
+   ================================ */
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +14,9 @@ body {
     background: linear-gradient(135deg, #e8f5f3 0%, #f8f9fa 100%);
 }
 
-/* Loading Overlay */
+/* ================================
+   LOADING & SKELETON STYLES
+   ================================ */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -53,25 +58,6 @@ body {
     font-size: 1.1rem;
 }
 
-/* Hero Loading Indicator */
-.hero-loading {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-}
-
-.hero-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top: 3px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-/* Skeleton Loaders */
 .skeleton-loader {
     display: flex;
     gap: 1rem;
@@ -83,7 +69,7 @@ body {
 }
 
 .skeleton-card {
-    width: 120px;
+    width: 140px;
     height: 140px;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -108,12 +94,12 @@ body {
 
 .products-skeleton {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
 }
 
 .skeleton-product-card {
-    height: 180px;
+    height: 200px;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -125,7 +111,9 @@ body {
     100% { background-position: 200% 0; }
 }
 
-/* Header Styles */
+/* ================================
+   HEADER & NAVIGATION
+   ================================ */
 .header {
     position: fixed;
     top: 0;
@@ -179,7 +167,6 @@ body {
     border-radius: 1px;
 }
 
-/* Mobile Menu */
 .mobile-menu {
     position: fixed;
     top: 0;
@@ -250,12 +237,13 @@ body {
     visibility: visible;
 }
 
-/* Main Content */
+/* ================================
+   MAIN LAYOUT
+   ================================ */
 .main {
     margin-top: 50px;
 }
 
-/* Page container */
 .page {
     display: none;
     min-height: calc(100vh - 50px);
@@ -300,7 +288,9 @@ body {
     transform: translateY(-2px);
 }
 
-/* ✅ UPDATED: Hero Section - 2:1 Aspect Ratio */
+/* ================================
+   HERO SECTION (2:1 Aspect Ratio)
+   ================================ */
 .hero {
     width: 100%;
     aspect-ratio: 2/1;
@@ -315,15 +305,9 @@ body {
     border-radius: 0;
 }
 
-.hero::before {
-    display: none !important;
-}
-
-.hero-content {
-    display: none !important;
-}
-
-/* Booking Section */
+/* ================================
+   BOOKING SECTION
+   ================================ */
 .booking-section {
     background: white;
     padding: 2rem 1.5rem;
@@ -373,6 +357,15 @@ body {
     color: white;
 }
 
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
 .btn-large {
     padding: 1.2rem 2.5rem;
     font-size: 1.1rem;
@@ -385,7 +378,9 @@ body {
     font-weight: 600;
 }
 
-/* Section Styles */
+/* ================================
+   SECTION STYLES
+   ================================ */
 .section {
     padding: 1.5rem;
 }
@@ -398,91 +393,6 @@ body {
     font-weight: 700;
 }
 
-/* ✅ UPDATED: Doctors Preview Section - No Borders, Bigger Photos */
-.doctors-preview {
-    text-align: center;
-    padding: 1.2rem 0; /* ✅ Remove side padding */
-    background: transparent;
-    margin: 1rem 0; /* ✅ Remove side margins */
-    border: none; /* ✅ Remove borders */
-    box-shadow: none; /* ✅ Remove shadows */
-}
-
-.doctors-preview .section-title {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
-}
-
-/* ✅ UPDATED: Horizontal Scrollable Container - No Borders */
-.doctors-preview-container {
-    display: flex;
-    overflow-x: auto;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding: 0.5rem 1rem; /* ✅ Add horizontal padding for content */
-    scrollbar-width: none; /* ✅ Hide scrollbar */
-    -webkit-overflow-scrolling: touch;
-}
-
-/* ✅ Hide scrollbars completely */
-.doctors-preview-container::-webkit-scrollbar {
-    display: none;
-}
-
-/* ✅ UPDATED: Doctor Preview Cards - Bigger Photos, No Borders */
-.doctor-preview-card {
-    width: 140px; /* ✅ Increased from 120px */
-    flex-shrink: 0;
-    background: white;
-    border-radius: 20px;
-    padding: 1rem; /* ✅ Increased padding */
-    text-align: center;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease;
-    cursor: pointer;
-    will-change: transform;
-    border: none; /* ✅ Remove borders */
-}
-
-.doctor-preview-card:hover {
-    transform: translateY(-3px);
-}
-
-/* ✅ UPDATED: Bigger Doctor Avatar */
-.doctor-preview-avatar {
-    width: 80px; /* ✅ Increased from 60px */
-    height: 80px; /* ✅ Increased from 60px */
-    border-radius: 50%;
-    background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%);
-    margin: 0 auto 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem; /* ✅ Increased font size */
-    color: #2c8577;
-    border: none; /* ✅ Remove borders */
-}
-
-.doctor-preview-avatar img {
-    width: 80px; /* ✅ Increased from 60px */
-    height: 80px; /* ✅ Increased from 60px */
-    border-radius: 50%;
-    object-fit: cover;
-    border: none; /* ✅ Remove borders */
-}
-
-.doctor-preview-name {
-    font-size: 0.9rem; /* ✅ Slightly increased */
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.2rem;
-}
-
-.doctor-preview-qualification {
-    color: #666;
-    font-size: 0.8rem; /* ✅ Slightly increased */
-}
-
 .view-all-btn {
     background: #2c8577;
     color: white;
@@ -493,8 +403,7 @@ body {
     transition: all 0.3s ease;
     display: inline-block;
     font-size: 0.9rem;
-    will-change: transform;
-    border: none; /* ✅ Remove borders */
+    border: none;
 }
 
 .view-all-btn:hover {
@@ -502,7 +411,114 @@ body {
     transform: translateY(-2px);
 }
 
-/* Services Preview Section */
+/* ================================
+   DOCTORS SECTION (Bigger Photos, No Borders)
+   ================================ */
+.doctors-preview {
+    text-align: center;
+    padding: 1.2rem 0;
+    background: transparent;
+    margin: 1rem 0;
+    border: none;
+    box-shadow: none;
+}
+
+.doctors-preview .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+.doctors-preview-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.doctors-preview-container::-webkit-scrollbar {
+    display: none;
+}
+
+.doctor-preview-card {
+    width: 140px;
+    flex-shrink: 0;
+    background: white;
+    border-radius: 20px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.doctor-preview-card:hover {
+    transform: translateY(-3px);
+}
+
+.doctor-preview-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%);
+    margin: 0 auto 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #2c8577;
+    border: none;
+}
+
+.doctor-preview-avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: none;
+}
+
+.doctor-preview-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.2rem;
+}
+
+.doctor-preview-qualification {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.doctor-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%);
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #2c8577;
+    cursor: pointer;
+    border: none;
+}
+
+.doctor-avatar img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: none;
+}
+
+/* ================================
+   SERVICES SECTION
+   ================================ */
 .services-preview {
     padding: 1.5rem;
 }
@@ -522,7 +538,6 @@ body {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease;
     cursor: pointer;
-    will-change: transform;
 }
 
 .service-preview-card:hover {
@@ -547,75 +562,94 @@ body {
     margin-bottom: 0.8rem;
 }
 
-/* Products Section */
+/* ================================
+   PRODUCTS SECTION (Profile Photos)
+   ================================ */
 .products-preview {
     padding: 1.5rem;
 }
 
 .products-preview-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 1rem;
 }
 
 .product-preview-card {
     background: white;
     border-radius: 15px;
-    padding: 1rem;
+    padding: 1.5rem;
     text-align: center;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease;
-    will-change: transform;
-    cursor: pointer; /* ✅ Added cursor pointer */
 }
 
 .product-preview-card:hover {
     transform: translateY(-3px);
 }
 
-.product-preview-image {
+.product-profile-photo {
     width: 100%;
-    height: 120px; /* ✅ Increased height */
-    border-radius: 10px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.8rem;
-    overflow: hidden;
     background: #f8f9fa;
 }
 
-.product-preview-image img {
+.product-profile-photo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 10px;
 }
 
-.product-preview-image video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
+.product-no-photo {
+    background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%);
+    color: #2c8577;
+    font-size: 2.5rem;
 }
 
 .product-preview-title {
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.5rem;
 }
 
 .product-preview-price {
     color: #2c8577;
     font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 0.8rem;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
 }
 
-/* ✅ NEW: Product Details Modal */
-.product-details-modal {
+.product-preview-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.product-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.product-preview-buttons .btn,
+.product-buttons .btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+    flex: 1;
+}
+
+/* ================================
+   PRODUCT VIEW MODAL (Internal)
+   ================================ */
+.product-view-modal {
     display: none;
     position: fixed;
     z-index: 3000;
@@ -627,7 +661,7 @@ body {
     overflow-y: auto;
 }
 
-.product-details-content {
+.product-view-content {
     background-color: white;
     margin: 2% auto;
     padding: 0;
@@ -639,20 +673,20 @@ body {
     overflow: hidden;
 }
 
-.product-details-layout {
+.product-view-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
     padding: 2rem;
 }
 
-.product-media-section {
+.product-images-section {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.main-media {
+.main-product-image {
     width: 100%;
     height: 400px;
     border-radius: 12px;
@@ -663,21 +697,20 @@ body {
     justify-content: center;
 }
 
-.main-media img,
-.main-media video {
+.main-product-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.media-thumbnails {
+.product-image-thumbnails {
     display: flex;
     gap: 0.5rem;
     overflow-x: auto;
     padding-bottom: 0.5rem;
 }
 
-.media-thumbnail {
+.product-thumbnail {
     width: 80px;
     height: 80px;
     border-radius: 8px;
@@ -688,16 +721,15 @@ body {
     flex-shrink: 0;
 }
 
-.media-thumbnail.active {
+.product-thumbnail.active {
     border-color: #2c8577;
 }
 
-.media-thumbnail:hover {
+.product-thumbnail:hover {
     border-color: #2c8577;
 }
 
-.media-thumbnail img,
-.media-thumbnail video {
+.product-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -717,23 +749,114 @@ body {
     margin: 0;
 }
 
-.product-price-large {
+.product-view-price {
     font-size: 2.5rem;
     font-weight: 700;
     color: #2c8577;
 }
 
-.product-description-full {
+.product-view-description {
     color: #666;
     font-size: 1.1rem;
     line-height: 1.6;
 }
 
-.product-actions {
+.product-view-actions {
     margin-top: auto;
 }
 
-/* Full page sections */
+/* ================================
+   SUB-SERVICES MODAL
+   ================================ */
+.sub-services-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.sub-services-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 700px;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.sub-services-list {
+    margin-bottom: 2rem;
+}
+
+.sub-service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    background: white;
+}
+
+.sub-service-info {
+    flex: 1;
+}
+
+.sub-service-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.2rem;
+}
+
+.sub-service-price {
+    color: #2c8577;
+    font-weight: 600;
+}
+
+.sub-service-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sub-service-actions button {
+    padding: 0.3rem 0.6rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.edit-sub-service {
+    background: #17a2b8;
+    color: white;
+}
+
+.delete-sub-service {
+    background: #dc3545;
+    color: white;
+}
+
+.add-sub-service {
+    border-top: 2px solid #e9ecef;
+    padding-top: 1.5rem;
+}
+
+.add-sub-service h4 {
+    color: #2c8577;
+    margin-bottom: 1rem;
+}
+
+/* ================================
+   FULL PAGE SECTIONS
+   ================================ */
 .doctors-container, .services-container, .products-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -749,35 +872,10 @@ body {
     text-align: center;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease;
-    will-change: transform;
 }
 
 .doctor-card:hover, .service-card:hover, .product-card:hover {
     transform: translateY(-4px);
-}
-
-/* ✅ UPDATED: Bigger Doctor Avatar in Full View */
-.doctor-avatar {
-    width: 120px; /* ✅ Increased from 100px */
-    height: 120px; /* ✅ Increased from 100px */
-    border-radius: 50%;
-    background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%);
-    margin: 0 auto 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem; /* ✅ Increased font size */
-    color: #2c8577;
-    cursor: pointer;
-    border: none; /* ✅ Remove borders */
-}
-
-.doctor-avatar img {
-    width: 120px; /* ✅ Increased from 100px */
-    height: 120px; /* ✅ Increased from 100px */
-    border-radius: 50%;
-    object-fit: cover;
-    border: none; /* ✅ Remove borders */
 }
 
 .doctor-name {
@@ -799,7 +897,6 @@ body {
     margin-bottom: 1rem;
 }
 
-/* Service styles */
 .service-image {
     width: 100%;
     height: 130px;
@@ -828,7 +925,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Product styles */
 .product-image {
     width: 100%;
     height: 160px;
@@ -842,12 +938,6 @@ body {
 }
 
 .product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.product-image video {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -873,7 +963,9 @@ body {
     margin-bottom: 1rem;
 }
 
-/* Admin Dashboard and Modal Styles remain the same... */
+/* ================================
+   MODALS & OVERLAYS
+   ================================ */
 .doctor-details {
     display: none;
     position: fixed;
@@ -917,6 +1009,52 @@ body {
     position: relative;
 }
 
+.service-details {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.service-details-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.edit-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.edit-modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
 .close {
     color: #aaa;
     float: right;
@@ -933,6 +1071,17 @@ body {
     color: #2c8577;
 }
 
+.test-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ================================
+   FORM STYLES
+   ================================ */
 .form-group {
     margin-bottom: 1rem;
 }
@@ -958,7 +1107,9 @@ body {
     border-color: #2c8577;
 }
 
-/* Admin Dashboard styles remain the same... */
+/* ================================
+   ADMIN DASHBOARD
+   ================================ */
 .admin-dashboard {
     display: none;
     background: #f8f9fa;
@@ -1038,6 +1189,33 @@ body {
 
 .tab-panel.active {
     display: block;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
 }
 
 .form-section {
@@ -1171,6 +1349,11 @@ body {
     gap: 0.5rem;
 }
 
+.item-actions-extended {
+    display: flex;
+    gap: 0.3rem;
+}
+
 .edit-btn, .delete-btn {
     padding: 0.25rem 0.5rem;
     border: none;
@@ -1189,6 +1372,16 @@ body {
     color: white;
 }
 
+.manage-sub-services-btn {
+    background: #28a745;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
 .edit-btn:hover {
     background: #138496;
 }
@@ -1197,88 +1390,13 @@ body {
     background: #c82333;
 }
 
-.edit-modal {
-    display: none;
-    position: fixed;
-    z-index: 3000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+.manage-sub-services-btn:hover {
+    background: #218838;
 }
 
-.edit-modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-.service-details {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.service-details-content {
-    background-color: white;
-    margin: 10% auto;
-    padding: 2rem;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 600px;
-    position: relative;
-    max-height: 70vh;
-    overflow-y: auto;
-}
-
-.test-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #007bff;
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    color: #6c757d;
-    font-size: 0.9rem;
-}
-
-/* Responsive Design */
+/* ================================
+   RESPONSIVE DESIGN
+   ================================ */
 @media (max-width: 768px) {
     .header {
         padding: 0.5rem 1rem;
@@ -1288,7 +1406,6 @@ body {
         font-size: 0.8rem;
     }
 
-    /* Mobile Hero Adjustments for 2:1 */
     .hero {
         aspect-ratio: 3/2;
     }
@@ -1309,19 +1426,18 @@ body {
         padding: 1rem;
     }
 
-    /* ✅ Mobile Doctor Preview Adjustments */
     .doctors-preview-container {
         gap: 0.75rem;
         padding: 0.5rem;
     }
 
     .doctor-preview-card {
-        width: 120px; /* ✅ Slightly smaller on mobile */
+        width: 120px;
         padding: 0.8rem;
     }
 
     .doctor-preview-avatar {
-        width: 70px; /* ✅ Adjusted for mobile */
+        width: 70px;
         height: 70px;
         font-size: 1.8rem;
     }
@@ -1331,9 +1447,8 @@ body {
         height: 70px;
     }
 
-    /* ✅ Mobile Doctor Full View Adjustments */
     .doctor-avatar {
-        width: 100px; /* ✅ Adjusted for mobile */
+        width: 100px;
         height: 100px;
         font-size: 2.2rem;
     }
@@ -1343,14 +1458,33 @@ body {
         height: 100px;
     }
 
-    /* ✅ Mobile Product Details Modal */
-    .product-details-layout {
+    .products-preview-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .product-profile-photo {
+        height: 100px;
+    }
+
+    .product-preview-buttons,
+    .product-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .product-preview-buttons .btn,
+    .product-buttons .btn {
+        width: 100%;
+    }
+
+    .product-view-layout {
         grid-template-columns: 1fr;
         gap: 1rem;
         padding: 1rem;
     }
 
-    .main-media {
+    .main-product-image {
         height: 250px;
     }
 
@@ -1358,8 +1492,23 @@ body {
         font-size: 1.5rem;
     }
 
-    .product-price-large {
+    .product-view-price {
         font-size: 2rem;
+    }
+
+    .sub-services-content {
+        margin: 10% auto;
+        padding: 1.5rem;
+    }
+
+    .sub-service-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .sub-service-actions {
+        align-self: flex-end;
     }
 
     .page {
@@ -1382,7 +1531,7 @@ body {
         font-size: 1.6rem;
     }
 
-    .services-preview-grid, .products-preview-grid {
+    .services-preview-grid {
         grid-template-columns: 1fr;
     }
 
@@ -1413,7 +1562,9 @@ body {
     }
 }
 
-/* Performance: Reduce motion for users who prefer it */
+/* ================================
+   PERFORMANCE OPTIMIZATIONS
+   ================================ */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -1423,87 +1574,12 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
-/* All previous styles remain the same, plus these additions: */
 
-/* ✅ NEW: Product Profile Photo Styles */
-.product-profile-photo {
-    width: 100%;
-    height: 120px;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8f9fa;
-}
-
-.product-profile-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.product-no-photo {
-    background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%);
-    color: #2c8577;
-    font-size: 2.5rem;
-}
-
-/* ✅ NEW: Product Button Styles */
-.product-preview-buttons {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.product-buttons {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-    padding: 0.7rem 1.2rem;
-    border: none;
-    border-radius: 25px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
-}
-
-/* ✅ UPDATED: Smaller primary buttons in product cards */
-.product-preview-buttons .btn,
-.product-buttons .btn {
-    padding: 0.7rem 1.2rem;
-    font-size: 0.85rem;
-    flex: 1;
-}
-
-/* ✅ Hero section - no video buffering indicators */
-.hero-loading {
-    display: none !important;
-}
-
-/* ✅ Responsive adjustments for product buttons */
-@media (max-width: 768px) {
-    .product-preview-buttons,
-    .product-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .product-preview-buttons .btn,
-    .product-buttons .btn {
-        width: 100%;
-    }
+/* Force hardware acceleration for smooth animations */
+.btn,
+.doctor-preview-card,
+.service-preview-card,
+.product-preview-card {
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
