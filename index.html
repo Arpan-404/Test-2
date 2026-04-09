@@ -174,6 +174,7 @@
 
         function App() {
           const [allPatients, setAllPatients] = useState([]);
+          const [draftPatient, setDraftPatient] = useState(null); // Holds unsaved newly created patient
           const [viewMode, setViewMode] = useState('login_selection'); // login_selection, patient_login_form, home, patient
           const [authRole, setAuthRole] = useState(null); // 'doctor' | 'patient' | null
           
@@ -274,8 +275,6 @@
           const handleDoctorGoogleLogin = async () => {
               setLoginError("");
               try { 
-                  // Triggering signInWithPopup will automatically fire onAuthStateChanged
-                  // which will then run our checkLoginState hook and log the doctor in.
                   await signInWithPopup(auth, googleProvider); 
               } catch (error) { setLoginError("Doctor login failed. Check popup blockers."); }
           };
@@ -319,6 +318,7 @@
 
               setAuthRole(null);
               setActivePatientId(null);
+              setDraftPatient(null);
               setViewMode('login_selection');
               setPatientLoginId("");
               setPatientLoginPhone("");
@@ -335,6 +335,7 @@
 
           const handleCreatePatient = () => {
             let newIpId;
+            // Generate a unique 4-digit UPID
             do {
                 newIpId = Math.floor(1000 + Math.random() * 9000).toString();
             } while (allPatients.some(p => p.ipId === newIpId));
@@ -346,7 +347,9 @@
               chiefComplaints: '', history: '', assessmentNote: '', diagnosis: '',
               treatmentNote: '', customTables: [], reassessmentTables: [] 
             };
-            setActivePatientId(newPatient.id); setViewMode('patient');
+            setDraftPatient(newPatient);
+            setActivePatientId(newPatient.id); 
+            setViewMode('patient');
           };
 
           const handleSavePatient = async (updatedPatient) => {
@@ -363,12 +366,17 @@
                 
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'patients', updatedPatient.id);
                 await setDoc(docRef, patientToSave);
+                
+                // Clear the draft state since it's now saved in allPatients
+                setDraftPatient(null);
             } catch(e) { console.error("Save failed: ", e); }
             setTimeout(() => setIsSaving(false), 500); 
           };
 
           const doctorPatients = allPatients.filter(p => p.doctorId === user?.uid);
-          const activePatient = allPatients.find(p => p.id === activePatientId) || { id: activePatientId };
+          
+          // Use draft if available (for brand new patients not yet saved), otherwise find in DB
+          const activePatient = draftPatient || allPatients.find(p => p.id === activePatientId) || { id: activePatientId };
 
           if (isConnecting || isCheckingSession) return (
                <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-blue-600">
@@ -453,7 +461,15 @@
                   <PatientDetailView 
                       patient={activePatient} 
                       onSave={handleSavePatient} 
-                      onCancel={() => { if(authRole === 'doctor') { setViewMode('home'); setActivePatientId(null); } else { handleLogout(); } }} 
+                      onCancel={() => { 
+                          setDraftPatient(null);
+                          if(authRole === 'doctor') { 
+                              setViewMode('home'); 
+                              setActivePatientId(null); 
+                          } else { 
+                              handleLogout(); 
+                          } 
+                      }} 
                       readOnly={authRole === 'patient'}
                   />
                 )}
