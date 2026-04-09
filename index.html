@@ -3,560 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physio - The Therapeutic Moves</title>
+    <title>PhysioCare Tracker</title>
     
-    <!-- React & Tailwind dependencies for Tracker -->
+    <!-- React & Tailwind -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- Disable Tailwind Preflight so it doesn't break the main Vanilla site CSS -->
-    <script>
-        tailwind = { corePlugins: { preflight: false } }
-    </script>
-
     <style>
-        /* ================================
-           MAIN SITE STYLES (Vanilla)
-           ================================ */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #e8f5f3 0%, #f8f9fa 100%); }
-
-        .skeleton-loader { display: flex; gap: 1rem; margin-bottom: 1rem; }
-        .skeleton-loader.hidden { display: none; }
-        .skeleton-card { width: 140px; height: 140px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 20px; flex-shrink: 0; }
-        .services-skeleton, .products-skeleton { display: flex; gap: 1rem; overflow-x: hidden; }
-        .skeleton-service-card, .skeleton-product-card { width: 260px; height: 200px; flex-shrink: 0; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 15px; }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-
-        .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease-in-out; height: 55px; gap: 10px; }
-        .header.hidden { transform: translateY(-100%); }
-        .logo { display: flex; align-items: center; gap: 8px; color: #2c8577; font-weight: 700; font-size: 1.05rem; white-space: nowrap; text-decoration: none; }
-        .logo-img { width: 35px; height: 35px; border-radius: 8px; object-fit: cover; }
-        
-        .search-container { flex-grow: 1; display: flex; justify-content: flex-end; position: relative; }
-        .search-input { width: 100%; max-width: 200px; padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid #e0e0e0; background: #f8f9fa; transition: all 0.3s ease; font-size: 0.9rem; outline: none; }
-        .search-input:focus { max-width: 350px; background: white; border-color: #2c8577; box-shadow: 0 0 0 3px rgba(44, 133, 119, 0.1); }
-        .search-results { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; max-height: 70vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1002; display: none; padding: 1rem; border: 1px solid #f0f0f0; }
-        .search-results.active { display: block; }
-        .search-result-item { padding: 0.8rem; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s; border-radius: 8px; text-decoration: none; color: inherit; }
-        .search-result-item:hover { background: #f8f9fa; }
-        .search-category-title { font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 5px; font-weight: bold; }
-
-        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 5px; flex-shrink: 0; }
-        .hamburger span { width: 22px; height: 2px; background: #2c8577; margin: 2.5px 0; transition: 0.3s; border-radius: 2px; }
-        .mobile-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s ease; padding: 2rem 0; }
-        .mobile-menu.active { right: 0; }
-        .mobile-menu ul { list-style: none; padding: 0; }
-        .mobile-menu ul li a { display: block; padding: 1rem 2rem; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.3s; font-size: 1.1rem; text-decoration: none; color: #333; }
-        .mobile-menu ul li a:hover { background: #f8f9fa; }
-        .mobile-menu ul li.admin-link a { margin-top: 2rem; background: #e8f5f3; color: #2c8577; font-weight: 600; }
-        .close-menu { position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: #2c8577; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s; }
-        .overlay.active { opacity: 1; visibility: visible; }
-
-        .main { margin-top: 55px; }
-        .page { display: none; min-height: calc(100vh - 55px); padding: 1rem; animation: fadeIn 0.3s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .page-header { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
-        .page-title { font-size: 2rem; color: #2c8577; margin-bottom: 1rem; font-weight: 700; }
-        
-        .back-btn { display: inline-block; background: #e8f5f3; color: #2c8577; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; text-decoration: none; margin-bottom: 1.5rem; }
-        .back-btn:hover { background: #d1f2eb; }
-        
-        .hero-container { width: 100%; aspect-ratio: 16/7; position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 1rem; background: #e8f5f3; }
-        .slider-track { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
-        .slide { min-width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; }
-        .slider-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); color: #2c8577; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; display:flex; align-items:center; justify-content:center; font-size: 1.2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: 0.3s; }
-        .slider-btn:hover { background: white; color: #1a5c51; }
-        .slider-btn.prev { left: 10px; }
-        .slider-btn.next { right: 10px; }
-
-        .booking-section { background: white; padding: 1rem 1.5rem; text-align: center; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 2rem; }
-        .booking-content h1 { display: none; font-size: 2.2rem; margin-bottom: 1rem; font-weight: 700; color: #2c8577; }
-        .booking-content .tagline { font-size: 1.1rem; margin-bottom: 0.8rem; color: #666; font-style: italic; line-height: 1.2; }
-        
-        .btn { display: inline-block; padding: 0.9rem 1.8rem; background: #2c8577; color: white; text-decoration: none; border-radius: 40px; font-weight: 600; transition: all 0.3s ease; border: none; cursor: pointer; font-size: 0.95rem; margin: 0.2rem; will-change: transform; text-align: center; }
-        .btn:hover { background: #245a4f; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(44, 133, 119, 0.3); }
-        .btn-primary { background: #2c8577; color: white; }
-        .btn-secondary { background: #e8f5f3; color: #2c8577; }
-        .btn-danger { background: #dc3545; color: white; }
-        
-        .doctors-preview-container, .services-preview-container, .products-preview-container { display: flex; overflow-x: auto; gap: 1rem; padding: 0.5rem 1rem; scrollbar-width: none; }
-        .doctors-preview-container::-webkit-scrollbar, .services-preview-container::-webkit-scrollbar, .products-preview-container::-webkit-scrollbar { display: none; }
-        
-        .doctor-preview-card { width: 140px; flex-shrink: 0; background: white; border-radius: 20px; padding: 1rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); cursor: pointer; text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
-        .doctor-preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%); margin: 0 auto 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #2c8577; }
-        .doctor-preview-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        
-        .service-preview-card, .product-preview-card { width: 260px; flex-shrink: 0; background: white; border-radius: 15px; padding: 1.5rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); transition: transform 0.3s ease; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
-        .product-profile-photo { width: 100%; height: 140px; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
-        .product-profile-photo img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .doctors-container, .services-container, .products-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem; }
-        .doctor-card, .service-card, .product-card { background: white; border-radius: 18px; padding: 1.8rem; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
-        
-        .detail-page-content { background: white; border-radius: 18px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; }
-        .product-view-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        .main-product-image { width: 100%; height: 350px; border-radius: 12px; overflow: hidden; background: #f8f9fa; display: flex; align-items: center; justify-content: center; }
-        .main-product-image img { width: 100%; height: 100%; object-fit: cover; }
-
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); overflow-y: auto; padding: 1rem; }
-        .modal-content { background-color: white; margin: auto; padding: 2rem; border-radius: 15px; width: 100%; max-width: 500px; position: relative; top: 50%; transform: translateY(-50%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; right: 1.5rem; top: 1rem; }
-        
-        .form-group, .form-row { margin-bottom: 1rem; }
-        .form-field label, .form-group label { margin-bottom: 0.5rem; font-weight: 600; color: #495057; display: block;}
-        .form-field input, .form-field textarea, .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 8px; font-size: 1rem; }
-        .form-row.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-        .admin-dashboard { display: none; background: #f8f9fa; min-height: 100vh; padding-bottom: 2rem; }
-        .admin-dashboard.active { display: block; }
-        .admin-header { background: white; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .admin-tabs { display: flex; overflow-x: auto; background: white; border-bottom: 1px solid #dee2e6; margin-bottom: 1rem; }
-        .admin-tab { padding: 1rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 1rem; color: #495057; border-bottom: 3px solid transparent; white-space: nowrap; }
-        .admin-tab.active { color: #2c8577; border-bottom-color: #2c8577; font-weight: 600; }
-        .admin-content { max-width: 900px; margin: 0 auto; padding: 0 1rem; }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
-        .item-list { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
-        .item { padding: 1.2rem; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-        
-        .btn-google { background-color: #fff; color: #3c4043; border: 1px solid #dadce0; border-radius: 8px; padding: 0.75rem 1rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; cursor: pointer; font-size: 1rem; margin-top: 1rem; }
-        
-        #toastNotification { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; }
-        #toastNotification.show { visibility: visible; opacity: 1; }
-
-        @media (max-width: 768px) {
-            .hero-container { aspect-ratio: 16/9; border-radius: 0; }
-            .product-view-layout { grid-template-columns: 1fr; gap: 1rem; }
-            .form-row.two-col { grid-template-columns: 1fr; }
-        }
-
-        /* ================================
-           REACT TRACKER SCOPED FIXES
-           ================================ */
-        #react-tracker-root { display: none; }
-        /* When Tracker is active, hide main site */
-        body.tracker-active .header, 
-        body.tracker-active .main,
-        body.tracker-active .admin-dashboard,
-        body.tracker-active #mobileMenu,
-        body.tracker-active #overlay { display: none !important; }
-        body.tracker-active #react-tracker-root { display: block; margin-top: 0; }
-        
-        /* Add essential resets for Tailwind inside the React container (since preflight is off) */
-        #react-tracker-root *, #react-tracker-root ::before, #react-tracker-root ::after {
-            border-width: 0; border-style: solid; border-color: #e5e7eb; box-sizing: border-box;
-        }
-        #react-tracker-root input, #react-tracker-root textarea, #react-tracker-root select {
-            border-width: 1px; font-family: inherit; font-size: 100%; margin: 0;
-        }
-        #react-tracker-root button {
-            background: transparent; padding: 0; cursor: pointer;
-        }
-        
-        /* Print Styles exclusively for Tracker */
+        @page { size: A4; margin: 10mm; }
         @media print {
-            body { background: white !important; margin: 0; padding: 0; }
-            .print\:hidden { display: none !important; }
-            .print\:block { display: block !important; }
-            .print\:border-none { border: none !important; }
-            .print\:shadow-none { box-shadow: none !important; }
-            .print-break-inside-avoid { break-inside: avoid; page-break-inside: avoid; }
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                background-color: white !important;
+            }
+            .print-break-inside-avoid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .print-break-after-auto {
+                page-break-after: auto;
+            }
             thead.print-table-header { display: table-header-group; }
             table.main-print-table { page-break-inside: auto; width: 100%; }
             tr.main-print-row { page-break-inside: avoid; page-break-after: auto; }
             tr.main-print-row-allow-break { page-break-inside: auto; page-break-after: auto; }
             
-            #react-tracker-root .editable-cell:empty:before { content: none !important; display: none !important; }
+            .editable-cell:empty:before { content: none !important; display: none !important; }
         }
         
-        #react-tracker-root .editable-cell {
-            min-width: 30px; max-width: 100%; outline: none; word-break: break-word; white-space: pre-wrap; transition: background-color 0.2s;
+        .editable-cell {
+            min-width: 30px;
+            max-width: 100%;
+            outline: none;
+            word-break: break-word;
+            white-space: pre-wrap;
+            transition: background-color 0.2s;
         }
-        #react-tracker-root .editable-cell:empty:before {
-            content: attr(data-placeholder); color: #cbd5e1; pointer-events: none; display: block; 
+        .editable-cell:not([contenteditable="false"]):empty:before {
+            content: attr(data-placeholder);
+            color: #cbd5e1;
+            pointer-events: none;
+            display: block; 
         }
-        #react-tracker-root .editable-cell:focus {
+        .editable-cell:not([contenteditable="false"]):focus {
             background-color: rgba(239, 246, 255, 0.5); 
+        }
+        
+        /* Read-only styling adjustments */
+        input:disabled, select:disabled, textarea:disabled {
+            background-color: transparent;
+            border-color: transparent;
+            color: #1e293b;
+            resize: none;
+            appearance: none;
+            -webkit-appearance: none;
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div id="toastNotification"></div>
+    <div id="root"></div>
 
-    <!-- MAIN SITE HEADER -->
-    <header class="header" id="header">
-        <a href="#/home" class="logo">
-            <img src="https://via.placeholder.com/40x40/2c8577/ffffff?text=PT" alt="Logo" class="logo-img" id="clinicLogo" loading="lazy">
-            <span id="clinicName">Physio Clinic</span>
-        </a>
-        <div class="search-container">
-            <input type="text" id="globalSearch" class="search-input" placeholder="Search..." oninput="window.handleSearch()">
-        </div>
-        <div class="hamburger" onclick="window.toggleMenu()">
-            <span></span><span></span><span></span>
-        </div>
-    </header>
-
-    <div id="searchResults" class="search-results"></div>
-
-    <div class="mobile-menu" id="mobileMenu">
-        <button class="close-menu" onclick="window.toggleMenu()">&times;</button>
-        <ul>
-            <li><a href="#/home" onclick="window.toggleMenu()">Home</a></li>
-            <li><a href="#/doctors" onclick="window.toggleMenu()">Doctors</a></li>
-            <li><a href="#/services" onclick="window.toggleMenu()">Services</a></li>
-            <li><a href="#/products" onclick="window.toggleMenu()">Products</a></li>
-            <!-- NEW MENU ITEM FOR REPORTS -->
-            <li><a href="#/reports" onclick="window.toggleMenu()" style="color: #1a5c51; font-weight: bold;">Prescription/Reports</a></li>
-            <li class="admin-link"><a onclick="window.showAdminLogin(); window.toggleMenu();">Admin Login</a></li>
-        </ul>
-    </div>
-    <div class="overlay" id="overlay" onclick="window.toggleMenu()"></div>
-
-    <!-- MAIN SITE CONTENT -->
-    <main class="main" id="mainContent">
-        <div class="page active" id="homePage">
-            <div class="hero-container" id="heroSection"></div>
-            <section class="booking-section">
-                <div class="booking-content">
-                    <h1 id="heroTitle">Therapeutic Moves</h1>
-                    <p class="tagline" id="heroTagline">"We add life in your days."</p>
-                    <button class="btn btn-primary" onclick="window.bookAppointment()">Book Appointment</button>
-                    <div class="phone-number" id="phoneNumber">📞 +91 9641568109</div>
-                </div>
-            </section>
-            
-            <section class="doctors-preview">
-                <h2 class="section-title">Our Expert Team</h2>
-                <div class="doctors-preview-container" id="doctorsPreview"></div>
-                <a href="#/doctors" class="view-all-btn">View All Doctors</a>
-            </section>
-            <section class="services-preview">
-                <h2 class="section-title">Our Services</h2>
-                <div class="services-preview-container" id="servicesPreview"></div>
-                <a href="#/services" class="view-all-btn">View All Services</a>
-            </section>
-            <section class="products-preview">
-                <h2 class="section-title">Our Products</h2>
-                <div class="products-preview-container" id="productsPreview"></div>
-                <a href="#/products" class="view-all-btn">View All Products</a>
-            </section>
-        </div>
-
-        <!-- Detail Pages -->
-        <div class="page" id="doctorsPage"><a href="#/home" class="back-btn">← Back</a><div class="page-header"><h1 class="page-title">Our Doctors</h1></div><div class="doctors-container" id="doctorsContainer"></div></div>
-        <div class="page" id="servicesPage"><a href="#/home" class="back-btn">← Back</a><div class="page-header"><h1 class="page-title">Our Services</h1></div><div class="services-container" id="servicesContainer"></div></div>
-        <div class="page" id="productsPage"><a href="#/home" class="back-btn">← Back</a><div class="page-header"><h1 class="page-title">Our Products</h1></div><div class="products-container" id="productsContainer"></div></div>
-
-        <!-- Single Item Detail Pages -->
-        <div class="page" id="doctorDetailPage"><a href="javascript:history.back()" class="back-btn">← Go Back</a><div class="detail-page-content" style="text-align: center;"><div class="doctor-avatar" id="pageDoctorAvatar" style="margin:0 auto 1rem;"></div><h2 id="pageDoctorName" style="color: #2c8577; margin-bottom: 0.5rem; font-size: 2rem;"></h2><p id="pageDoctorQualification" style="color: #666; margin-bottom: 0.5rem; font-weight:bold; font-size: 1.1rem;"></p><p id="pageDoctorFees" style="color: #2c8577; font-size: 1.3rem; margin-bottom: 1.5rem; font-weight: bold;"></p><div style="text-align: left; max-width: 600px; margin: 0 auto;"><h3 style="color:#333; margin-bottom: 0.5rem;">About</h3><p id="pageDoctorDetails" style="color: #666; margin-bottom: 2rem; line-height: 1.8;"></p></div><button class="btn btn-primary" id="pageBookingBtn" style="padding: 1rem 3rem; font-size: 1.1rem;">Book Appointment</button></div></div>
-        <div class="page" id="serviceDetailPage"><a href="javascript:history.back()" class="back-btn">← Go Back</a><div class="detail-page-content"><div id="pageServiceBanner" class="service-detail-banner"></div><h1 id="pageServiceTitle" style="color: #2c8577; margin-bottom: 1rem; font-size: 2rem;"></h1><p id="pageServiceDesc" style="color:#666; line-height:1.8; margin-bottom: 2rem; font-size: 1.05rem;"></p><div id="pageServiceTestsContainer"></div><div style="text-align: center; margin-top: 2rem;"><button class="btn btn-primary" id="pageServiceBookBtn" style="padding: 1rem 3rem; font-size: 1.1rem;">Book This Service</button></div></div></div>
-        <div class="page" id="productDetailPage"><a href="javascript:history.back()" class="back-btn">← Go Back</a><div class="detail-page-content"><div class="product-view-layout"><div><div class="main-product-image" id="pageProductMainImg"></div><div class="product-image-thumbnails" id="pageProductThumbs"></div></div><div><h1 id="pageProductName" style="color:#2c8577; margin-bottom:0.5rem; font-size:2rem;"></h1><div class="product-view-price" id="pageProductPrice"></div><h3 style="color:#333; margin-bottom: 0.5rem; margin-top: 1rem;">Description</h3><p id="pageProductDesc" style="color:#666; margin-bottom:2.5rem; line-height:1.8;"></p><button class="btn btn-primary" style="width:100%; padding:1rem; font-size: 1.1rem;" id="pageProductBuyBtn">🛒 Buy via WhatsApp</button></div></div></div></div>
-    </main>
-
-    <!-- REACT APP ROOT (PhysioCare Tracker) -->
-    <div id="react-tracker-root"></div>
-
-    <!-- MAIN SITE MODALS -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <span class="close" onclick="window.closeAdminModal()">&times;</span>
-            <h2 style="color: #2c8577; margin-bottom: 1.5rem; text-align:center;">Admin Login</h2>
-            <form id="adminLoginForm">
-                <div class="form-group"><label>Email</label><input type="email" id="adminEmailInput" required></div>
-                <div class="form-group"><label>Password</label><input type="password" id="adminPassword" required></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top:0.5rem;">Login with Email</button>
-            </form>
-            <div style="display: flex; align-items: center; margin: 1.5rem 0; color: #999;"><hr style="flex-grow: 1; border: none; border-top: 1px solid #eee;"><span style="padding: 0 10px; font-size: 0.9rem;">OR</span><hr style="flex-grow: 1; border: none; border-top: 1px solid #eee;"></div>
-            <button type="button" class="btn-google" onclick="window.loginWithGoogle()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo"> Sign in with Google</button>
-        </div>
-    </div>
-
-    <div id="editModal" class="modal"><div class="modal-content"><span class="close" onclick="window.closeEditModal()">&times;</span><h3 id="editModalTitle" style="margin-bottom:1.5rem; color:#2c8577;"></h3><div id="editModalContent"></div></div></div>
-    <div id="customConfirmModal" class="modal" style="z-index: 4000;"><div class="modal-content" style="text-align: center; max-width: 400px;"><h3 id="confirmMsg" style="margin-bottom: 1.5rem; color: #333;"></h3><div style="display: flex; gap: 1rem; justify-content: center;"><button id="confirmYesBtn" class="btn btn-danger">Yes, proceed</button><button id="confirmNoBtn" class="btn btn-secondary">Cancel</button></div></div></div>
-
-    <!-- MAIN SITE ADMIN DASHBOARD -->
-    <div class="admin-dashboard" id="adminDashboard">
-        <header class="admin-header"><h2 style="color:#2c8577;">Admin Dashboard</h2><button class="btn btn-danger" onclick="window.logout()">Logout</button></header>
-        <nav class="admin-tabs"><button class="admin-tab active" data-tab="clinic">Clinic Info</button><button class="admin-tab" data-tab="doctors">Doctors</button><button class="admin-tab" data-tab="services">Services</button><button class="admin-tab" data-tab="products">Products</button></nav>
-        <div class="admin-content">
-            <div class="tab-panel active" id="clinic-panel">
-                <div class="form-section">
-                    <h3 style="margin-bottom:1.5rem; color:#2c8577;">Clinic Information</h3>
-                    <div class="form-row two-col"><div class="form-field"><label>Clinic Name</label><input type="text" id="adminClinicName"></div><div class="form-field"><label>Phone</label><input type="tel" id="adminPhone"></div></div>
-                    <div class="form-row two-col"><div class="form-field"><label>WhatsApp Number</label><input type="tel" id="adminWhatsApp"></div><div class="form-field"><label>Admin Email Address</label><input type="text" id="adminEmail"></div></div>
-                    <div class="form-row"><div class="form-field"><label>Tagline</label><input type="text" id="adminTagline"></div></div>
-                    <div class="form-row"><div class="form-field"><label>Logo Upload</label><input type="file" accept="image/*" onchange="window.handleImageUpload(this, 'adminLogoUrl', 'logoPreview')"><input type="hidden" id="adminLogoUrl"><img id="logoPreview" class="image-preview"></div></div>
-                    <div class="form-row"><div class="form-field"><label>Hero Slider Images</label><input type="file" accept="image/*" multiple onchange="window.handleGalleryUpload(this, 'adminSliderImages')"><textarea id="adminSliderImages" class="form-group" style="width:100%; border-radius:6px; padding:8px; font-size:0.8rem; background:#f4f4f4;" readonly></textarea></div></div>
-                    <button class="btn btn-primary" onclick="window.updateClinicInfo()" style="margin-top:1.5rem;">Save Changes</button>
-                </div>
-            </div>
-            <div class="tab-panel" id="doctors-panel"><button class="btn btn-primary" style="margin-bottom:1.5rem;" onclick="window.addNewDoctor()">+ Add Doctor</button><div class="item-list" id="doctorsAdminList"></div></div>
-            <div class="tab-panel" id="services-panel"><button class="btn btn-primary" style="margin-bottom:1.5rem;" onclick="window.addNewService()">+ Add Service</button><div class="item-list" id="servicesAdminList"></div></div>
-            <div class="tab-panel" id="products-panel"><button class="btn btn-primary" style="margin-bottom:1.5rem;" onclick="window.addNewProduct()">+ Add Product</button><div class="item-list" id="productsAdminList"></div></div>
-        </div>
-    </div>
-
-
-    <!-- =========================================================
-         VANILLA JS LOGIC (MAIN SITE)
-         ========================================================= -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getDatabase, ref, update, set, onValue } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-
-        const firebaseConfigMain = {
-            apiKey: "AIzaSyAuk3feAZjoHF2VwdWtA0F4lhQKarU0w-4",
-            authDomain: "clinic-bdf92.firebaseapp.com",
-            databaseURL: "https://clinic-bdf92-default-rtdb.firebaseio.com",
-            projectId: "clinic-bdf92",
-            storageBucket: "clinic-bdf92.firebasestorage.app",
-            messagingSenderId: "302452317883",
-            appId: "1:302452317883:web:6585bf22ea1a7f3a96939e"
-        };
-        const appMain = initializeApp(firebaseConfigMain, "mainClinicApp");
-        const database = getDatabase(appMain);
-        const authMain = getAuth(appMain);
-        const googleProvider = new GoogleAuthProvider();
-
-        let slideIndex = 0; let slideInterval; let dataLoaded = false; 
-
-        window.siteData = { hero: {}, settings: {}, doctors: [], services: [], products: [] };
-        window.slugify = (text) => text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
-
-        window.handleRoute = function() {
-            if (!dataLoaded) return; 
-            const hash = window.location.hash || '#/home';
-            const parts = hash.split('/');
-            const route = parts[1]; 
-            const slug = parts[2];  
-
-            // Check if we are routing to the tracker (React app)
-            if (route === 'reports') {
-                document.body.classList.add('tracker-active');
-                return; // Let React handle the rest
-            } else {
-                document.body.classList.remove('tracker-active');
-            }
-
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById('adminDashboard').classList.remove('active');
-            document.getElementById('mainContent').style.display = 'block';
-
-            if (route === 'home' || !route) document.getElementById('homePage').classList.add('active');
-            else if (route === 'doctors') document.getElementById('doctorsPage').classList.add('active');
-            else if (route === 'services') document.getElementById('servicesPage').classList.add('active');
-            else if (route === 'products') document.getElementById('productsPage').classList.add('active');
-            else if (route === 'doctor' && slug) renderDoctorDetailPage(slug);
-            else if (route === 'service' && slug) renderServiceDetailPage(slug);
-            else if (route === 'product' && slug) renderProductDetailPage(slug);
-            else document.getElementById('homePage').classList.add('active');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        window.addEventListener('hashchange', window.handleRoute);
-
-        onValue(ref(database, 'site'), (snapshot) => {
-            try {
-                if (snapshot.exists()) window.siteData = { ...window.siteData, ...snapshot.val() };
-                dataLoaded = true; renderSite(); updateAdminForm(); updateStats(); updateHeroBackground();
-                ['doctorsSkeleton', 'servicesSkeleton', 'productsSkeleton'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
-                window.handleRoute(); 
-            } catch (error) {}
-        });
-
-        function renderSite() {
-            if (window.siteData.hero) {
-                document.getElementById('clinicName').textContent = window.siteData.hero.clinicName;
-                document.getElementById('heroTitle').textContent = window.siteData.hero.title;
-                document.getElementById('heroTagline').textContent = window.siteData.hero.tagline;
-                document.getElementById('phoneNumber').innerHTML = `📞 ${window.siteData.hero.phone}`;
-                if(window.siteData.hero.logoUrl) document.getElementById('clinicLogo').src = window.siteData.hero.logoUrl;
-            }
-            renderDoctorsPreview(); renderServicesPreview(); renderProductsPreview();
-            renderDoctors(); renderServices(); renderProducts(); renderAdminLists();
-        }
-
-        function updateHeroBackground() {
-            const container = document.getElementById('heroSection');
-            const images = window.siteData.hero?.sliderImages?.length ? window.siteData.hero.sliderImages : (window.siteData.hero?.bannerImageUrl ? [window.siteData.hero.bannerImageUrl] : []);
-            if(images.length === 0) { container.innerHTML = '<div class="slider-track"><div class="slide" style="background: linear-gradient(135deg, #2c8577 0%, #4a9b8c 100%)"></div></div>'; return; }
-            let html = '<div class="slider-track" id="sliderTrack">';
-            images.forEach(img => html += `<div class="slide" style="background-image:url('${img}')"></div>`);
-            html += '</div>';
-            if(images.length > 1) { html += `<button class="slider-btn prev" onclick="window.moveSlide(-1)">❮</button><button class="slider-btn next" onclick="window.moveSlide(1)">❯</button>`; }
-            container.innerHTML = html;
-            clearInterval(slideInterval); if(images.length > 1) { slideInterval = setInterval(() => { window.moveSlide(1); }, 3000); }
-        }
-
-        window.moveSlide = function(step) {
-            const images = window.siteData.hero?.sliderImages?.length ? window.siteData.hero.sliderImages : (window.siteData.hero?.bannerImageUrl ? [window.siteData.hero.bannerImageUrl] : []);
-            if(images.length <= 1) return;
-            slideIndex = (slideIndex + step + images.length) % images.length;
-            document.getElementById('sliderTrack').style.transform = `translateX(-${slideIndex * 100}%)`;
-        }
-
-        // --- Render functions ---
-        function renderDoctorsPreview() {
-            const container = document.getElementById('doctorsPreview'); if (!container) return; container.innerHTML = '';
-            window.siteData.doctors?.forEach(doctor => {
-                const docCard = document.createElement('a'); docCard.className = 'doctor-preview-card'; docCard.href = `#/doctor/${window.slugify(doctor.name)}`;
-                docCard.innerHTML = `${doctor.photoUrl ? `<div class="doctor-preview-avatar"><img src="${doctor.photoUrl}" loading="lazy"></div>` : '<div class="doctor-preview-avatar">👨‍⚕️</div>'}<div class="doctor-preview-name">${doctor.name}</div><div class="doctor-preview-qualification">${doctor.qualification}</div>`;
-                container.appendChild(docCard);
-            });
-        }
-        function renderServicesPreview() {
-            const container = document.getElementById('servicesPreview'); if (!container) return; container.innerHTML = '';
-            window.siteData.services?.slice(0, 6).forEach(service => {
-                const card = document.createElement('a'); card.className = 'service-preview-card'; card.href = `#/service/${window.slugify(service.title)}`;
-                card.innerHTML = `${service.bannerImageUrl ? `<img src="${service.bannerImageUrl}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:1rem;" loading="lazy">` : `<div class="service-preview-icon">${service.icon}</div>`}<div class="service-preview-title">${service.title}</div><div class="service-preview-description">${service.description}</div><div class="service-buttons"><button class="btn btn-secondary">Details</button><button class="btn btn-primary" onclick="event.preventDefault(); window.buyService('${service.title}')">Book</button></div>`;
-                container.appendChild(card);
-            });
-        }
-        function renderProductsPreview() {
-            const container = document.getElementById('productsPreview'); if (!container) return; container.innerHTML = '';
-            if(window.siteData.products?.length) {
-                window.siteData.products.slice(0, 6).forEach(product => {
-                    const card = document.createElement('a'); card.className = 'product-preview-card'; card.href = `#/product/${window.slugify(product.name)}`; 
-                    card.innerHTML = `${product.profilePhoto ? `<div class="product-profile-photo"><img src="${product.profilePhoto}" loading="lazy"></div>` : `<div class="product-profile-photo product-no-photo">📦</div>`}<div class="service-preview-title">${product.name}</div><div class="product-preview-price">${product.price}</div><div class="product-preview-buttons"><button class="btn btn-secondary">View</button><button class="btn btn-primary" onclick="event.preventDefault(); window.buyProduct('${product.name}')">Buy</button></div>`;
-                    container.appendChild(card);
-                });
-            } else { container.innerHTML = '<p style="text-align:center; color:#666; width:100%;">No products available.</p>'; }
-        }
-        function renderDoctors() {
-            const c = document.getElementById('doctorsContainer'); if (!c) return; c.innerHTML = '';
-            window.siteData.doctors?.forEach(d => {
-                const el = document.createElement('div'); el.className = 'doctor-card';
-                el.innerHTML = `${d.photoUrl ? `<div class="doctor-avatar"><img src="${d.photoUrl}" loading="lazy"></div>` : `<div class="doctor-avatar">👨‍⚕️</div>`}<div class="doctor-name">${d.name}</div><div class="doctor-qualification">${d.qualification}</div><div class="doctor-fees">${d.fees}</div><p style="color:#666; margin-bottom:1rem;">${d.details}</p><div style="display:flex; gap:10px;"><a href="#/doctor/${window.slugify(d.name)}" class="btn btn-secondary" style="flex:1;">View Profile</a> <button class="btn btn-primary" style="flex:1;" onclick="window.bookDoctorAppointment('${d.name}')">Book</button></div>`;
-                c.appendChild(el);
-            });
-        }
-        function renderServices() {
-            const c = document.getElementById('servicesContainer'); if (!c) return; c.innerHTML = '';
-            window.siteData.services?.forEach(s => {
-                const el = document.createElement('div'); el.className = 'service-card';
-                el.innerHTML = `${s.bannerImageUrl ? `<div style="height:150px; background-image:url('${s.bannerImageUrl}'); background-size:cover; border-radius:12px; margin-bottom:1rem;"></div>` : `<div class="service-preview-icon">${s.icon}</div>`}<div class="service-preview-title">${s.title}</div><p style="color:#666; margin-bottom:1rem;">${s.description}</p><div class="service-buttons"><a href="#/service/${window.slugify(s.title)}" class="btn btn-secondary">Details</a><button class="btn btn-primary" onclick="window.buyService('${s.title}')">Book Now</button></div>`;
-                c.appendChild(el);
-            });
-        }
-        function renderProducts() {
-            const c = document.getElementById('productsContainer'); if (!c) return; c.innerHTML = '';
-            window.siteData.products?.forEach(p => {
-                const el = document.createElement('div'); el.className = 'product-card';
-                el.innerHTML = `${p.profilePhoto ? `<div class="product-profile-photo"><img src="${p.profilePhoto}" loading="lazy"></div>` : `<div class="product-profile-photo product-no-photo">📦</div>`}<div class="service-preview-title">${p.name}</div><p style="color:#666;">${p.description.substring(0, 80)}...</p><div class="product-preview-price" style="margin-top:1rem;">${p.price}</div><div class="product-buttons"><a href="#/product/${window.slugify(p.name)}" class="btn btn-secondary">Details</a><button class="btn btn-primary" onclick="window.buyProduct('${p.name}')">Buy Now</button></div>`;
-                c.appendChild(el);
-            });
-        }
-
-        function renderDoctorDetailPage(slug) {
-            const doctor = window.siteData.doctors.find(d => window.slugify(d.name) === slug);
-            if (!doctor) { window.location.hash = '#/doctors'; return; } 
-            document.getElementById('pageDoctorName').textContent = doctor.name; document.getElementById('pageDoctorQualification').textContent = doctor.qualification; document.getElementById('pageDoctorFees').textContent = `Consultation Fee: ${doctor.fees}`; document.getElementById('pageDoctorDetails').textContent = doctor.details;
-            const avatar = document.getElementById('pageDoctorAvatar'); avatar.innerHTML = doctor.photoUrl ? `<img src="${doctor.photoUrl}">` : '👨‍⚕️';
-            document.getElementById('pageBookingBtn').onclick = () => window.bookDoctorAppointment(doctor.name); document.getElementById('doctorDetailPage').classList.add('active');
-        }
-        function renderServiceDetailPage(slug) {
-            const service = window.siteData.services.find(s => window.slugify(s.title) === slug);
-            if (!service) { window.location.hash = '#/services'; return; }
-            document.getElementById('pageServiceTitle').textContent = service.title; document.getElementById('pageServiceDesc').textContent = service.description;
-            const banner = document.getElementById('pageServiceBanner'); banner.innerHTML = service.bannerImageUrl ? `<img src="${service.bannerImageUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : service.icon || '⚕️';
-            document.getElementById('pageServiceBookBtn').onclick = () => window.buyService(service.title); document.getElementById('serviceDetailPage').classList.add('active');
-        }
-        function renderProductDetailPage(slug) {
-            const product = window.siteData.products.find(p => window.slugify(p.name) === slug);
-            if (!product) { window.location.hash = '#/products'; return; }
-            document.getElementById('pageProductName').textContent = product.name; document.getElementById('pageProductPrice').textContent = product.price; document.getElementById('pageProductDesc').textContent = product.description; document.getElementById('pageProductBuyBtn').onclick = () => window.buyProduct(product.name);
-            const mainImg = document.getElementById('pageProductMainImg'); mainImg.innerHTML = product.images?.length > 0 ? `<img src="${product.images[0]}">` : (product.profilePhoto ? `<img src="${product.profilePhoto}">` : '<span style="font-size:4rem; color:#ccc;">📦</span>');
-            document.getElementById('productDetailPage').classList.add('active');
-        }
-
-        window.toggleMenu = function() { document.getElementById('mobileMenu').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-        window.showToast = function(msg, type='success') { const t = document.getElementById('toastNotification'); t.textContent = msg; t.className = type==='error'?'error show':'show'; setTimeout(()=>t.classList.remove('show','error'),4000); }
-        window.getTemplateMsg = function(type, vars={}) {
-            let tpl = window.siteData.settings?.whatsappTemplates?.[type] || "";
-            for (const [key, value] of Object.entries(vars)) { tpl = tpl.replace(`{${key}}`, value); }
-            return tpl;
-        }
-        window.bookAppointment = () => window.open(`https://wa.me/${window.siteData.hero.whatsappNumber?.replace('+','')}?text=` + encodeURIComponent(window.getTemplateMsg('general')), '_blank');
-        window.bookDoctorAppointment = (n) => window.open(`https://wa.me/${window.siteData.hero.whatsappNumber?.replace('+','')}?text=` + encodeURIComponent(window.getTemplateMsg('doctor', {doctorName: n})), '_blank');
-        window.buyService = (n) => window.open(`https://wa.me/${window.siteData.hero.whatsappNumber?.replace('+','')}?text=` + encodeURIComponent(window.getTemplateMsg('service', {serviceName: n})), '_blank');
-        window.buyProduct = (n) => window.open(`https://wa.me/${window.siteData.hero.whatsappNumber?.replace('+','')}?text=` + encodeURIComponent(window.getTemplateMsg('product', {productName: n})), '_blank');
-
-        // Admin Dashboard basic functions
-        window.showAdminLogin = () => document.getElementById('adminModal').style.display = 'block';
-        window.closeAdminModal = () => document.getElementById('adminModal').style.display = 'none';
-        
-        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try { await signInWithEmailAndPassword(authMain, document.getElementById('adminEmailInput').value, document.getElementById('adminPassword').value); document.getElementById('adminModal').style.display = 'none'; document.getElementById('adminDashboard').classList.add('active'); document.getElementById('mainContent').style.display = 'none'; window.showToast('Logged in'); } catch(e) { window.showToast('Invalid credentials', 'error'); }
-        });
-        window.loginWithGoogle = async () => {
-            try { const res = await signInWithPopup(authMain, googleProvider); if(!window.siteData.hero?.email?.toLowerCase().includes(res.user.email.toLowerCase())) { await signOut(authMain); throw new Error("Not an admin"); } document.getElementById('adminModal').style.display = 'none'; document.getElementById('adminDashboard').classList.add('active'); document.getElementById('mainContent').style.display = 'none'; window.showToast('Logged in securely'); } catch(e) { window.showToast('Login failed', 'error'); }
-        };
-        window.logout = () => { signOut(authMain); document.getElementById('adminDashboard').classList.remove('active'); document.getElementById('mainContent').style.display = 'block'; window.location.hash = '#/home'; }
-
-        function updateAdminForm() {
-            if (!window.siteData.hero) return; const h = window.siteData.hero;
-            document.getElementById('adminClinicName').value = h.clinicName || ''; document.getElementById('adminPhone').value = h.phone || ''; document.getElementById('adminWhatsApp').value = h.whatsappNumber || ''; document.getElementById('adminEmail').value = h.email || ''; document.getElementById('adminTagline').value = h.tagline || '';
-        }
-        function updateStats() {
-            document.getElementById('totalDoctors').textContent = window.siteData.doctors?.length || 0; document.getElementById('totalServices').textContent = window.siteData.services?.length || 0; document.getElementById('totalProducts').textContent = window.siteData.products?.length || 0;
-        }
-        function renderAdminLists() {
-            const dc = document.getElementById('doctorsAdminList'); dc.innerHTML = ''; window.siteData.doctors?.forEach(d => { const el = document.createElement('div'); el.className = 'item'; el.innerHTML = `<div class="item-info"><h4>${d.name}</h4><p>${d.qualification}</p></div><div class="item-actions"><button class="btn btn-secondary btn-buy-small" onclick="window.editDoctor(${d.id})">Edit</button><button class="btn btn-danger btn-buy-small" onclick="window.deleteDoctor(${d.id})">Delete</button></div>`; dc.appendChild(el); });
-            const sc = document.getElementById('servicesAdminList'); sc.innerHTML = ''; window.siteData.services?.forEach(s => { const el = document.createElement('div'); el.className = 'item'; el.innerHTML = `<div class="item-info"><h4>${s.title}</h4></div><div class="item-actions"><button class="btn btn-secondary btn-buy-small" onclick="window.editService(${s.id})">Edit</button><button class="btn btn-danger btn-buy-small" onclick="window.deleteService(${s.id})">Delete</button></div>`; sc.appendChild(el); });
-            const pc = document.getElementById('productsAdminList'); pc.innerHTML = ''; window.siteData.products?.forEach(p => { const el = document.createElement('div'); el.className = 'item'; el.innerHTML = `<div class="item-info"><h4>${p.name}</h4><p>${p.price}</p></div><div class="item-actions"><button class="btn btn-secondary btn-buy-small" onclick="window.editProduct(${p.id})">Edit</button><button class="btn btn-danger btn-buy-small" onclick="window.deleteProduct(${p.id})">Delete</button></div>`; pc.appendChild(el); });
-        }
-        
-        window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
-        window.showConfirm = function(msg, callback) {
-            const modal = document.getElementById('customConfirmModal'); document.getElementById('confirmMsg').textContent = msg; modal.style.display = 'block';
-            document.getElementById('confirmYesBtn').onclick = () => { modal.style.display = 'none'; callback(); }; document.getElementById('confirmNoBtn').onclick = () => { modal.style.display = 'none'; };
-        }
-        
-        // Helper to bind tabs
-        document.querySelectorAll('.admin-tab').forEach(tab => {
-            tab.addEventListener('click', () => { document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active')); tab.classList.add('active'); document.getElementById(tab.dataset.tab + '-panel').classList.add('active'); });
-        });
-
-    </script>
-
-
-    <!-- =========================================================
-         REACT APPLICATION (PHYSIOCARE TRACKER & PATIENT PORTAL)
-         ========================================================= -->
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useRef } = React;
+
+        // --- FIREBASE IMPORTS ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const generateId = () => { return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15); };
-
-        // Tracker Firebase App (Completely independent from main site database)
-        const firebaseConfigTracker = {
-            apiKey: "AIzaSyCPhZY9CrsXJHIr5nBPaGPNVHsc70yfVus",
-            authDomain: "patient-records-arpan.firebaseapp.com",
-            projectId: "patient-records-arpan",
-            storageBucket: "patient-records-arpan.firebasestorage.app",
-            messagingSenderId: "599041105903",
-            appId: "1:599041105903:web:7f0c1c10f38f12cc2ee01a"
+        const generateId = () => {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         };
-        const appTracker = initializeApp(firebaseConfigTracker, "trackerApp");
-        const auth = getAuth(appTracker);
-        const db = getFirestore(appTracker);
+
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            firebaseConfig = {
+              apiKey: "AIzaSyCPhZY9CrsXJHIr5nBPaGPNVHsc70yfVus",
+              authDomain: "patient-records-arpan.firebaseapp.com",
+              projectId: "patient-records-arpan",
+              storageBucket: "patient-records-arpan.firebasestorage.app",
+              messagingSenderId: "599041105903",
+              appId: "1:599041105903:web:7f0c1c10f38f12cc2ee01a",
+              measurementId: "G-ZEE89YP3F3"
+            };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'github-physio-app';
 
+        // --- Joint Data ---
         const JOINTS_DATA = {
           'Cervical': [ { name: 'Flexion', type: 'single', normal: '45°' }, { name: 'Extension', type: 'single', normal: '45°' }, { name: 'Lat. Flexion', type: 'bilateral', normal: '45°' }, { name: 'Rotation', type: 'bilateral', normal: '60°' } ],
           'Spine': [ { name: 'Flexion', type: 'single', normal: '80°' }, { name: 'Extension', type: 'single', normal: '25°' }, { name: 'Lat. Flexion', type: 'bilateral', normal: '35°' }, { name: 'Rotation', type: 'bilateral', normal: '45°' } ],
@@ -569,19 +115,20 @@
           'Ankle': [ { name: 'Dorsiflexion', type: 'bilateral', normal: '20°' }, { name: 'Plantarflexion', type: 'bilateral', normal: '50°' }, { name: 'Inversion', type: 'bilateral', normal: '35°' }, { name: 'Eversion', type: 'bilateral', normal: '15°' } ]
         };
 
+        // --- Custom Table Editor ---
         function CustomTableEditor({ table, updateTable, removeTable, readOnly = false }) {
-            const addRow = () => { updateTable({ ...table, rows: [...table.rows, Array(table.headers.length).fill('')] }); };
-            const addCol = () => { updateTable({ ...table, headers: [...table.headers, 'New Col'], rows: table.rows.map(r => [...r, '']) }); };
-            const removeRow = (idx) => { updateTable({ ...table, rows: table.rows.filter((_, i) => i !== idx) }); };
-            const removeCol = (idx) => { updateTable({ ...table, headers: table.headers.filter((_, i) => i !== idx), rows: table.rows.map(r => r.filter((_, i) => i !== idx)) }); };
-            const updateHeader = (idx, val) => { updateTable({ ...table, headers: table.headers.map((h, i) => i === idx ? val : h) }); };
-            const updateCell = (rIdx, cIdx, val) => { updateTable({ ...table, rows: table.rows.map((row, i) => i === rIdx ? row.map((cell, j) => j === cIdx ? val : cell) : row) }); };
-            const updateTitle = (val) => { updateTable({ ...table, title: val }); };
+            const addRow = () => updateTable({ ...table, rows: [...table.rows, Array(table.headers.length).fill('')] });
+            const addCol = () => updateTable({ ...table, headers: [...table.headers, 'New Col'], rows: table.rows.map(r => [...r, '']) });
+            const removeRow = (idx) => updateTable({ ...table, rows: table.rows.filter((_, i) => i !== idx) });
+            const removeCol = (idx) => updateTable({ ...table, headers: table.headers.filter((_, i) => i !== idx), rows: table.rows.map(r => r.filter((_, i) => i !== idx)) });
+            const updateHeader = (idx, val) => updateTable({ ...table, headers: table.headers.map((h, i) => i === idx ? val : h) });
+            const updateCell = (rIdx, cIdx, val) => updateTable({ ...table, rows: table.rows.map((row, i) => i === rIdx ? row.map((cell, j) => j === cIdx ? val : cell) : row) });
+            const updateTitle = (val) => updateTable({ ...table, title: val });
 
             return (
                 <div className="w-fit max-w-full bg-white border border-slate-200 rounded-lg shadow-sm overflow-x-auto print:overflow-visible print:border-none print:shadow-none print-break-inside-avoid">
                     <div className={`bg-slate-100 px-3 py-2 flex items-center justify-between border-b border-slate-200 print:bg-transparent print:px-0 ${table.title ? 'print:border-b print:border-[#1e40af]' : 'print:border-none print:p-0'}`}>
-                        <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => !readOnly && updateTitle(e.currentTarget.textContent)} className={`font-bold text-sm text-blue-800 outline-none editable-cell w-auto print:text-[#1e40af] print:text-[18px] ${!table.title && readOnly ? 'hidden' : ''} ${!table.title ? 'print:hidden' : ''}`} data-placeholder="Table Title">{table.title}</div>
+                        <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateTitle(e.currentTarget.textContent)} className={`font-bold text-sm text-blue-800 outline-none editable-cell w-auto print:text-[#1e40af] print:text-[18px] ${!table.title && readOnly ? 'hidden' : ''}`} data-placeholder={readOnly ? '' : "Table Title (Optional)"}>{table.title}</div>
                         {!readOnly && (
                             <div className="flex gap-2 print:hidden ml-4">
                                 <button onClick={addCol} className="text-[10px] bg-white border border-slate-300 text-slate-600 px-2 py-1 rounded hover:bg-slate-50 whitespace-nowrap">+ Col</button>
@@ -596,7 +143,7 @@
                                 <tr>
                                     {table.headers.map((h, i) => (
                                         <th key={i} className="relative group border border-slate-200 p-0 bg-slate-50 print:border print:border-[#1e40af] print:bg-blue-50/30 print-break-inside-avoid">
-                                            <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => !readOnly && updateHeader(i, e.currentTarget.textContent)} className="editable-cell font-semibold text-slate-700 text-[12px] p-2 print:text-[#1e40af] print:font-bold print:text-[16px]" data-placeholder="Header">{h}</div>
+                                            <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateHeader(i, e.currentTarget.textContent)} className={`editable-cell font-semibold text-slate-700 text-[12px] p-2 print:text-[#1e40af] print:font-bold print:text-[16px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="Header">{h}</div>
                                             {!readOnly && table.headers.length > 1 && ( <button onClick={() => removeCol(i)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity print:hidden text-[8px] border border-red-200 z-10"><i className="ph-bold ph-x"></i></button> )}
                                         </th>
                                     ))}
@@ -608,7 +155,7 @@
                                     <tr key={rIdx} className="group print-break-inside-avoid">
                                         {row.map((cell, cIdx) => (
                                             <td key={cIdx} className="border border-slate-200 p-0 align-top print:border print:border-[#1e40af]">
-                                                <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => !readOnly && updateCell(rIdx, cIdx, e.currentTarget.textContent)} className="editable-cell text-slate-700 text-[12px] p-2 min-h-[32px] print:text-slate-900 print:min-h-0 print:py-1.5 print:px-2.5 print:text-[16px]">{cell}</div>
+                                                <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateCell(rIdx, cIdx, e.currentTarget.textContent)} className={`editable-cell text-slate-700 text-[12px] p-2 min-h-[32px] print:text-slate-900 print:min-h-0 print:py-1.5 print:px-2.5 print:text-[16px] ${readOnly ? 'min-h-[auto] cursor-default' : ''}`}>{cell}</div>
                                             </td>
                                         ))}
                                         {!readOnly && (
@@ -625,40 +172,46 @@
             );
         }
 
-        // --------------------------------------------------------
-        // Tracker Entry Point
-        // --------------------------------------------------------
-        function TrackerApp() {
-          const [route, setRoute] = useState(window.location.hash);
-          const [user, setUser] = useState(null);
+        function App() {
+          const [allPatients, setAllPatients] = useState([]);
+          const [viewMode, setViewMode] = useState('login_selection'); // login_selection, patient_login_form, home, patient
+          const [authRole, setAuthRole] = useState(null); // 'doctor' | 'patient' | null
           
-          // Doctor State
-          const [patients, setPatients] = useState([]);
           const [activePatientId, setActivePatientId] = useState(null);
+          const [searchQuery, setSearchQuery] = useState('');
+          const [isSaving, setIsSaving] = useState(false);
           
-          // Patient Portal State
-          const [patientSessionReport, setPatientSessionReport] = useState(null);
+          const [user, setUser] = useState(null);
+          const [isConnecting, setIsConnecting] = useState(true);
+          const [loginError, setLoginError] = useState("");
+
+          // Patient Login Form State
+          const [patientLoginId, setPatientLoginId] = useState("");
+          const [patientLoginPhone, setPatientLoginPhone] = useState("");
 
           useEffect(() => {
-            const onHashChange = () => setRoute(window.location.hash);
-            window.addEventListener('hashchange', onHashChange);
-            return () => window.removeEventListener('hashchange', onHashChange);
-          }, []);
+            const initAuth = async () => {
+              try {
+                  if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                      await signInWithCustomToken(auth, __initial_auth_token);
+                  } else {
+                      await signInAnonymously(auth);
+                  }
+              } catch(e) { console.error("Auth init error:", e); }
+            };
+            initAuth();
 
-          useEffect(() => {
             const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
               setUser(currentUser);
-              // If patient views their report but is not logged in anonymously, do it
-              if (!currentUser && window.location.hash === '#/reports') {
-                  signInAnonymously(auth).catch(()=>{});
-              }
+              setIsConnecting(false);
             });
             return () => unsubscribe();
           }, []);
 
+          // Fetch ALL patients globally (filtered in memory for doctors/patients to adhere to complex query rules)
           useEffect(() => {
-            if (!user || user.isAnonymous) return;
-            const patientsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'patients');
+            if (!user) return;
+            const patientsRef = collection(db, 'artifacts', appId, 'public', 'data', 'patients');
             const unsubscribe = onSnapshot(patientsRef, (snapshot) => {
               const data = [];
               snapshot.forEach(doc => {
@@ -670,275 +223,344 @@
                           return { ...t, rows: parsedRows };
                       });
                   }
-                  data.push(p);
+                  data.push({ id: doc.id, ...p });
               });
-              setPatients(data);
-            }, (err) => console.log(err));
+              setAllPatients(data);
+            }, (error) => { console.error("Firestore error:", error); });
             return () => unsubscribe();
           }, [user]);
 
-          // Doctor actions
+          const handleDoctorGoogleLogin = async () => {
+              setLoginError("");
+              try { 
+                  await signInWithPopup(auth, googleProvider); 
+                  setAuthRole('doctor');
+                  setViewMode('home');
+              } catch (error) { setLoginError("Doctor login failed. Check popup blockers."); }
+          };
+
+          const handlePatientLoginSubmit = (e) => {
+              e.preventDefault();
+              setLoginError("");
+              const match = allPatients.find(p => 
+                  (p.ipId?.toLowerCase() === patientLoginId.toLowerCase().trim() || 
+                   p.name?.toLowerCase() === patientLoginId.toLowerCase().trim()) &&
+                  p.contact?.trim() === patientLoginPhone.trim()
+              );
+
+              if (match) {
+                  setAuthRole('patient');
+                  setActivePatientId(match.id);
+                  setViewMode('patient');
+              } else {
+                  setLoginError("Prescription not found. Please check your UPID/Name and Mobile Number.");
+              }
+          };
+
+          const handleLogout = async () => {
+              setAuthRole(null);
+              setActivePatientId(null);
+              setViewMode('login_selection');
+              setPatientLoginId("");
+              setPatientLoginPhone("");
+              try { await signOut(auth); await signInAnonymously(auth); } catch (error) {}
+          };
+
+          const handleCreatePatient = () => {
+            let newIpId;
+            do {
+                newIpId = Math.floor(1000 + Math.random() * 9000).toString();
+            } while (allPatients.some(p => p.ipId === newIpId));
+
+            const newPatient = {
+              id: generateId(), ipId: newIpId, doctorId: user.uid,
+              date: new Date().toISOString().split('T')[0],
+              name: '', age: '', gender: '', contact: '',
+              chiefComplaints: '', history: '', assessmentNote: '', diagnosis: '',
+              treatmentNote: '', customTables: [], reassessmentTables: [] 
+            };
+            setActivePatientId(newPatient.id); setViewMode('patient');
+          };
+
           const handleSavePatient = async (updatedPatient) => {
-            if (!user || user.isAnonymous) return;
+            if (authRole !== 'doctor') return;
+            setIsSaving(true);
             try {
-                const patientToSave = { ...updatedPatient };
-                delete patientToSave.trackedMetrics; delete patientToSave.records;
+                const patientToSave = { ...updatedPatient, doctorId: user.uid };
+                delete patientToSave.trackedMetrics;
+                delete patientToSave.records;
                 if (patientToSave.customTables) {
                     patientToSave.customTables = patientToSave.customTables.map(t => ({ ...t, rows: JSON.stringify(t.rows) }));
                 }
+                Object.keys(patientToSave).forEach(key => { if (patientToSave[key] === undefined) delete patientToSave[key]; });
                 
-                // 1. Save strictly to Doctor's private collection
-                const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'patients', updatedPatient.id);
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'patients', updatedPatient.id);
                 await setDoc(docRef, patientToSave);
-
-                // 2. Mirror to Public Collection if "Published" is checked
-                const publicRef = doc(db, 'artifacts', appId, 'public', 'data', 'reports', updatedPatient.id);
-                if (updatedPatient.isPublished) {
-                    // Add doctor contact info to header for printing patient view
-                    patientToSave.clinicDetails = {
-                        name: "Dr. Arpan Das (PT)",
-                        degree: "BPT (KPC Medical College and Hospital)",
-                        role: "Consultant Physiotherapist",
-                        phone: "+91 9641568109"
-                    };
-                    await setDoc(publicRef, patientToSave);
-                } else {
-                    try { await deleteDoc(publicRef); } catch(e) {}
-                }
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Save failed: ", e); }
+            setTimeout(() => setIsSaving(false), 500); 
           };
 
-          // Render Logic
-          if (route !== '#/reports') return null;
+          const doctorPatients = allPatients.filter(p => p.doctorId === user?.uid);
+          const activePatient = allPatients.find(p => p.id === activePatientId) || { id: activePatientId };
 
-          if (user && !user.isAnonymous && !activePatientId && !patientSessionReport) {
+          if (isConnecting) return (
+               <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-blue-600">
+                  <i className="ph-bold ph-spinner-gap text-4xl animate-spin"></i><p className="font-semibold tracking-wide">Loading PhysioCare...</p>
+               </div>
+          );
+
+          if (viewMode === 'login_selection' || viewMode === 'patient_login_form') {
               return (
-                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-                  <header className="bg-blue-600 text-white shadow-md sticky top-0 z-10 print:hidden">
-                    <div className="max-w-6xl mx-auto px-3 py-2.5 flex justify-between items-center">
-                      <div className="flex items-center gap-2 cursor-pointer">
-                        <div className="bg-white text-blue-600 p-1.5 rounded-full flex items-center justify-center"><i className="ph-bold ph-activity text-lg"></i></div>
-                        <h1 className="text-lg font-bold tracking-wide">PhysioCare Tracker</h1>
+                  <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
+                      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+                          <div className="bg-blue-600 p-6 text-center text-white">
+                              <i className="ph-fill ph-activity text-5xl mb-2"></i>
+                              <h1 className="text-2xl font-bold">PhysioCare Tracker</h1>
+                              <p className="text-blue-200 text-sm mt-1">Digital Clinical Records</p>
+                          </div>
+                          
+                          <div className="p-6">
+                              {viewMode === 'login_selection' && (
+                                  <div className="space-y-4">
+                                      <h2 className="text-center text-slate-600 font-medium mb-6">Please select your portal to continue</h2>
+                                      
+                                      <button onClick={() => setViewMode('patient_login_form')} className="w-full group relative flex flex-col items-center p-5 bg-white border-2 border-emerald-100 rounded-xl hover:border-emerald-500 hover:shadow-md transition-all">
+                                          <div className="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i className="ph-fill ph-user-circle text-2xl"></i></div>
+                                          <span className="font-bold text-slate-800 text-lg">Patient Portal</span>
+                                          <span className="text-xs text-slate-500 mt-1">View & Print your Prescriptions</span>
+                                      </button>
+
+                                      <button onClick={handleDoctorGoogleLogin} className="w-full group relative flex flex-col items-center p-5 bg-white border-2 border-blue-100 rounded-xl hover:border-blue-500 hover:shadow-md transition-all mt-4">
+                                          <div className="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i className="ph-fill ph-stethoscope text-2xl"></i></div>
+                                          <span className="font-bold text-slate-800 text-lg">Doctor Portal</span>
+                                          <span className="text-xs text-slate-500 mt-1 flex items-center gap-1"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-3 h-3" /> Secure Google Sign-in</span>
+                                      </button>
+                                  </div>
+                              )}
+
+                              {viewMode === 'patient_login_form' && (
+                                  <form onSubmit={handlePatientLoginSubmit} className="space-y-5 animate-in fade-in slide-in-from-right-4">
+                                      <div className="flex items-center gap-2 mb-2 text-emerald-600 cursor-pointer" onClick={() => setViewMode('login_selection')}>
+                                          <i className="ph-bold ph-arrow-left"></i> <span className="text-sm font-semibold">Back to selection</span>
+                                      </div>
+                                      <h3 className="text-xl font-bold text-slate-800">Access Your Records</h3>
+                                      {loginError && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{loginError}</div>}
+                                      
+                                      <div className="space-y-1">
+                                          <label className="text-xs font-semibold text-slate-500 uppercase">Patient Name or UPID</label>
+                                          <input type="text" required value={patientLoginId} onChange={e => setPatientLoginId(e.target.value)} placeholder="e.g. John Doe or 4092" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                      </div>
+                                      <div className="space-y-1">
+                                          <label className="text-xs font-semibold text-slate-500 uppercase">Registered Mobile Number</label>
+                                          <input type="tel" required value={patientLoginPhone} onChange={e => setPatientLoginPhone(e.target.value)} placeholder="e.g. 9876543210" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                      </div>
+                                      <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 shadow-md transition-colors mt-2">View Prescription</button>
+                                  </form>
+                              )}
+                          </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                          <button onClick={() => {
-                              const newId = generateId();
-                              setActivePatientId(newId);
-                              setPatients([...patients, { id: newId, ipId: Math.floor(1000 + Math.random() * 9000).toString(), date: new Date().toISOString().split('T')[0], name: '', contact: '', isPublished: false, customTables: [], reassessmentTables: [] }]);
-                          }} className="flex items-center gap-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-400 border border-blue-400"><i className="ph-bold ph-plus"></i> Patient</button>
-                          <button onClick={() => { signOut(auth); window.location.hash = '#/home'; }} className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-700 text-white border border-blue-500"><i className="ph-bold ph-sign-out text-sm"></i></button>
-                      </div>
-                    </div>
-                  </header>
-                  <main className="max-w-6xl mx-auto px-2 sm:px-4 py-4">
-                      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200 text-left text-xs text-slate-600 uppercase tracking-wider">
-                              <th className="py-3 px-4 font-medium w-16">IP ID</th>
-                              <th className="py-3 px-4 font-medium w-48">Patient</th>
-                              <th className="py-3 px-4 font-medium text-center">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {patients.length === 0 ? <tr><td colSpan="3" className="py-8 text-center text-sm text-slate-400">No patients saved yet.</td></tr> :
-                              patients.map(p => (
-                                <tr key={p.id} className="border-b border-slate-100 hover:bg-blue-50/50 cursor-pointer" onClick={() => setActivePatientId(p.id)}>
-                                  <td className="py-3 px-4 text-sm font-semibold text-blue-600 align-top">{p.ipId}</td>
-                                  <td className="py-3 px-4 align-top"><div className="font-medium text-sm text-slate-800">{p.name || 'Unnamed'}</div><div className="text-xs text-slate-500">{p.contact || 'No contact'}</div></td>
-                                  <td className="py-3 px-4 text-center align-top"><span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${p.isPublished ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{p.isPublished ? 'Published' : 'Private'}</span></td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                  </main>
-                </div>
+                  </div>
               );
           }
 
-          if (activePatientId) {
-              return (
-                <div className="min-h-screen bg-slate-50 font-sans print:bg-white print:m-0 print:p-0">
-                  <header className="bg-blue-600 text-white shadow-md sticky top-0 z-10 print:hidden"><div className="max-w-6xl mx-auto px-3 py-2.5 flex justify-between items-center"><div className="flex items-center gap-2"><h1 className="text-lg font-bold">Tracker Editor</h1></div></div></header>
-                  <main className="max-w-6xl mx-auto px-2 sm:px-4 py-4 print:p-0 print:m-0 print:max-w-none">
-                     <PatientDetailView patient={patients.find(p => p.id === activePatientId)} onSave={handleSavePatient} onCancel={() => setActivePatientId(null)} />
-                  </main>
-                </div>
-              );
-          }
-
-          if (patientSessionReport) {
-              return (
-                 <div className="min-h-screen bg-slate-50 font-sans print:bg-white print:m-0 print:p-0">
-                  <header className="bg-[#1e40af] text-white shadow-md sticky top-0 z-10 print:hidden">
-                    <div className="max-w-6xl mx-auto px-3 py-2.5 flex justify-between items-center">
-                      <div className="flex items-center gap-2"><h1 className="text-lg font-bold">My Medical Record</h1></div>
-                      <div className="flex gap-2">
-                          <button onClick={() => window.print()} className="bg-white text-[#1e40af] px-3 py-1.5 rounded text-sm font-bold flex items-center gap-1"><i className="ph-bold ph-printer"></i> Print / PDF</button>
-                          <button onClick={() => setPatientSessionReport(null)} className="bg-[#1e3a8a] text-white px-3 py-1.5 rounded text-sm">Logout</button>
-                      </div>
-                    </div>
-                  </header>
-                  <main className="max-w-4xl mx-auto p-4 print:p-0 print:m-0">
-                     <PatientReadOnlyView formData={patientSessionReport} />
-                  </main>
-                 </div>
-              );
-          }
-
-          // Default Login UI
           return (
-             <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 font-sans">
-                 <button onClick={() => window.location.hash = '#/home'} className="absolute top-4 left-4 text-slate-500 font-semibold hover:text-blue-600 bg-white px-3 py-1.5 rounded-lg shadow-sm">← Back to Clinic</button>
-                 <ReportsLoginHub onPatientSuccess={(data) => setPatientSessionReport(data)} />
-             </div>
+            <div className="min-h-screen bg-slate-50 text-slate-800 font-sans print:bg-white print:m-0 print:p-0">
+              <header className={`${authRole === 'doctor' ? 'bg-blue-600' : 'bg-emerald-600'} text-white shadow-md sticky top-0 z-10 print:hidden`}>
+                <div className="max-w-6xl mx-auto px-3 py-2.5 flex justify-between items-center">
+                  <div className="flex items-center gap-2 cursor-pointer" onClick={() => authRole === 'doctor' && setViewMode('home')}>
+                    <div className={`bg-white ${authRole === 'doctor' ? 'text-blue-600' : 'text-emerald-600'} p-1.5 rounded-full flex items-center justify-center`}><i className="ph-bold ph-activity text-lg"></i></div>
+                    <h1 className="text-lg font-bold tracking-wide">PhysioCare {authRole === 'patient' && <span className="text-sm font-normal text-emerald-100 border-l border-emerald-400 pl-2 ml-2">Patient Portal</span>}</h1>
+                  </div>
+                  <div className="flex items-center gap-3">
+                      {isSaving && <span className="text-xs font-medium text-blue-200 animate-pulse hidden sm:block">Syncing...</span>}
+                      {viewMode === 'home' && authRole === 'doctor' && <button onClick={handleCreatePatient} className="flex items-center gap-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-400 shadow-sm border border-blue-400"><i className="ph-bold ph-plus"></i> Patient</button>}
+                      <button onClick={handleLogout} className={`flex items-center justify-center w-8 h-8 rounded-full ${authRole === 'doctor' ? 'bg-blue-700 hover:bg-blue-800 border-blue-500' : 'bg-emerald-700 hover:bg-emerald-800 border-emerald-500'} text-white border`} title="Logout"><i className="ph-bold ph-sign-out text-sm"></i></button>
+                  </div>
+                </div>
+              </header>
+
+              <main className="max-w-6xl mx-auto px-2 sm:px-4 py-4 print:p-0 print:m-0 print:max-w-none">
+                {viewMode === 'home' ? (
+                  <HomeView patients={doctorPatients.filter(p => p.ipId?.toLowerCase().includes(searchQuery.toLowerCase()) || p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || p.contact?.includes(searchQuery) || p.diagnosis?.toLowerCase().includes(searchQuery.toLowerCase()))} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onOpenPatient={(id) => { setActivePatientId(id); setViewMode('patient'); }} />
+                ) : (
+                  <PatientDetailView 
+                      patient={activePatient} 
+                      onSave={handleSavePatient} 
+                      onCancel={() => { if(authRole === 'doctor') { setViewMode('home'); setActivePatientId(null); } else { handleLogout(); } }} 
+                      readOnly={authRole === 'patient'}
+                  />
+                )}
+              </main>
+            </div>
           );
         }
 
-        // Login UI Component
-        function ReportsLoginHub({ onPatientSuccess }) {
-            const [tab, setTab] = useState('patient');
-            const [upid, setUpid] = useState('');
-            const [mobile, setMobile] = useState('');
-            const [error, setError] = useState('');
-            const [loading, setLoading] = useState(false);
-
-            const handlePatientLogin = async () => {
-                if(!upid || !mobile) { setError("Both fields required"); return; }
-                setError(""); setLoading(true);
-                try {
-                    if (!auth.currentUser) await signInAnonymously(auth);
-                    const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
-                    const snap = await getDocs(reportsRef);
-                    let found = null;
-                    snap.forEach(doc => {
-                        const d = doc.data();
-                        if (d.ipId === upid && d.contact === mobile) found = d;
-                    });
-                    if (found) {
-                        if (found.customTables) found.customTables = found.customTables.map(t => ({ ...t, rows: typeof t.rows === 'string' ? JSON.parse(t.rows) : t.rows }));
-                        onPatientSuccess(found);
-                    } else {
-                        setError("No published records found for these details.");
-                    }
-                } catch(e) { setError("Error connecting to server."); }
-                setLoading(false);
-            };
-
-            return (
-                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full">
-                    <h1 className="text-2xl font-bold text-center text-[#2c8577] mb-6">Prescriptions & Reports</h1>
-                    <div className="flex border-b border-slate-200 mb-6">
-                        <button onClick={() => { setTab('patient'); setError(''); }} className={`flex-1 py-3 font-semibold text-center border-b-2 ${tab === 'patient' ? 'border-[#2c8577] text-[#2c8577]' : 'border-transparent text-slate-500'}`}>Patient Portal</button>
-                        <button onClick={() => { setTab('doctor'); setError(''); }} className={`flex-1 py-3 font-semibold text-center border-b-2 ${tab === 'doctor' ? 'border-[#2c8577] text-[#2c8577]' : 'border-transparent text-slate-500'}`}>Doctor Access</button>
-                    </div>
-
-                    {tab === 'patient' ? (
-                        <div className="space-y-4">
-                            <p className="text-sm text-slate-500 text-center mb-4">View and print your clinical tracker reports.</p>
-                            {error && <div className="text-red-500 text-sm bg-red-50 p-2 rounded text-center">{error}</div>}
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1">UPID (Patient ID)</label>
-                                <input type="text" value={upid} onChange={e=>setUpid(e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg outline-none focus:border-[#2c8577]" placeholder="e.g. 1234" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1">Registered Mobile</label>
-                                <input type="tel" value={mobile} onChange={e=>setMobile(e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg outline-none focus:border-[#2c8577]" placeholder="Mobile Number" />
-                            </div>
-                            <button onClick={handlePatientLogin} disabled={loading} className="w-full py-3 bg-[#2c8577] text-white rounded-lg font-bold mt-2 hover:bg-[#1a5c51]">{loading ? 'Searching...' : 'View My Records'}</button>
-                        </div>
-                    ) : (
-                        <div className="space-y-4 text-center">
-                            <p className="text-sm text-slate-500 mb-6">Secure access for clinical tracking and prescription updates.</p>
-                            <button onClick={() => signInWithPopup(auth, googleProvider)} className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 text-slate-700 font-medium py-3 px-4 rounded-xl hover:bg-slate-50 shadow-sm"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" /> Sign in with Google</button>
-                        </div>
-                    )}
+        // --- HOME VIEW (Doctor Only) ---
+        function HomeView({ patients, searchQuery, setSearchQuery, onOpenPatient }) {
+          return (
+            <div className="space-y-4 print:hidden animate-in fade-in duration-300">
+              <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2">
+                <i className="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i>
+                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, ID, or diagnosis..." className="w-full bg-transparent focus:outline-none text-sm text-slate-700" />
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-left text-xs text-slate-600 uppercase tracking-wider">
+                        <th className="py-3 px-4 font-medium w-16">IP ID</th>
+                        <th className="py-3 px-4 font-medium w-48">Patient</th>
+                        <th className="py-3 px-4 font-medium">Diagnosis</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {patients.length === 0 ? (
+                        <tr><td colSpan="3" className="py-8 text-center text-sm text-slate-400">No patients saved yet.</td></tr>
+                      ) : (
+                        patients.map(p => (
+                          <tr key={p.id} className="border-b border-slate-100 hover:bg-blue-50/50 cursor-pointer" onClick={() => onOpenPatient(p.id)}>
+                            <td className="py-3 px-4 text-sm font-semibold text-blue-600 align-top">{p.ipId}</td>
+                            <td className="py-3 px-4 align-top">
+                              <div className="font-medium text-sm text-slate-800 leading-tight">{p.name || 'Unnamed'}</div>
+                              <div className="text-xs text-slate-500 mt-0.5">{p.contact || 'No contact'}</div>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-slate-700 align-top">{p.diagnosis || <span className="text-slate-400 italic">Not diagnosed</span>}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-            );
+              </div>
+            </div>
+          );
         }
 
-        // --- DOCTOR VIEW (Exact requested code + Publish Toggle) ---
-        function PatientDetailView({ patient, onSave, onCancel }) {
+        // --- PATIENT DETAIL VIEW ---
+        function PatientDetailView({ patient, onSave, onCancel, readOnly = false }) {
           const [formData, setFormData] = useState(() => {
               let rTables = patient.reassessmentTables || [];
               if (rTables.length === 0 && (patient.trackedMetrics?.length > 0 || patient.records?.length > 0)) {
-                  rTables = [{ id: 'default', title: 'Reassessment and progression tracking :-', trackedMetrics: patient.trackedMetrics || [], records: patient.records || [] }];
+                  rTables = [{ id: 'default-reassessment', title: 'Reassessment and progression tracking :-', trackedMetrics: patient.trackedMetrics || [], records: patient.records || [] }];
               } else if (rTables.length === 0) {
                   rTables = [{ id: generateId(), title: 'Reassessment and progression tracking :-', trackedMetrics: [], records: [] }];
               }
-              return { ...patient, customTables: patient.customTables || [], reassessmentTables: rTables, treatmentNote: patient.treatmentNote || '', isPublished: patient.isPublished || false };
+              return { ...patient, customTables: patient.customTables || [], reassessmentTables: rTables, treatmentNote: patient.treatmentNote || '' };
           });
-          
-          const [isMetricModalOpen, setIsMetricModalOpen] = useState(false); const [activeReassessmentTableId, setActiveReassessmentTableId] = useState(null);
 
-          const handleInputChange = (e) => { const { name, value } = e; setFormData(prev => ({ ...prev, [name]: value })); };
-          const handleAddCustomTable = (section) => { setFormData(prev => ({ ...prev, customTables: [...prev.customTables, { id: generateId(), section, title: '', headers: ['Column 1', 'Column 2'], rows: [['', ''], ['', '']] }] })); };
-          const handleUpdateCustomTable = (t) => { setFormData(prev => ({ ...prev, customTables: prev.customTables.map(x => x.id === t.id ? t : x) })); };
-          const handleRemoveCustomTable = (id) => { setFormData(prev => ({ ...prev, customTables: prev.customTables.filter(t => t.id !== id) })); };
+          // Sync if active patient data loads externally
+          useEffect(() => {
+              if (patient && patient.id !== formData.id && patient.id) {
+                  let rTables = patient.reassessmentTables || [];
+                  if (rTables.length === 0) rTables = [{ id: generateId(), title: 'Reassessment and progression tracking :-', trackedMetrics: [], records: [] }];
+                  setFormData({ ...patient, customTables: patient.customTables || [], reassessmentTables: rTables, treatmentNote: patient.treatmentNote || '' });
+              }
+          }, [patient]);
           
-          const addReassessmentTable = () => { setFormData(prev => ({ ...prev, reassessmentTables: [...prev.reassessmentTables, { id: generateId(), title: 'Reassessment and progression tracking :-', trackedMetrics: [], records: [] }] })); };
-          const removeReassessmentTable = (id) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.filter(t => t.id !== id) })); };
-          const updateReassessmentTableTitle = (id, title) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === id ? { ...t, title } : t) })); };
+          const [isMetricModalOpen, setIsMetricModalOpen] = useState(false);
+          const [activeReassessmentTableId, setActiveReassessmentTableId] = useState(null);
 
-          const addMetricColumn = (tableId, metricObj) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, trackedMetrics: [...t.trackedMetrics, metricObj] } : t) })); setIsMetricModalOpen(false); };
-          const removeMetricColumn = (tableId, metricId) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id !== tableId ? t : { ...t, trackedMetrics: t.trackedMetrics.filter(m => m.id !== metricId), records: t.records.map(rec => { const newV = {...rec.values}; delete newV[metricId]; return {...rec, values: newV}; }) }) })); };
+          const handleInputChange = (e) => { if (readOnly) return; const { name, value } = e; setFormData((prev) => ({ ...prev, [name]: value })); };
+
+          const handleAddCustomTable = (section) => {
+              if (readOnly) return;
+              const newTable = { id: generateId(), section: section, title: '', headers: ['Column 1', 'Column 2'], rows: [['', ''], ['', '']] };
+              setFormData(prev => ({ ...prev, customTables: [...prev.customTables, newTable] }));
+          };
+          const handleUpdateCustomTable = (updatedTable) => { if (readOnly) return; setFormData(prev => ({ ...prev, customTables: prev.customTables.map(t => t.id === updatedTable.id ? updatedTable : t) })); };
+          const handleRemoveCustomTable = (id) => { if (readOnly) return; setFormData(prev => ({ ...prev, customTables: prev.customTables.filter(t => t.id !== id) })); };
+
+          const addReassessmentTable = () => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: [...prev.reassessmentTables, { id: generateId(), title: 'Reassessment and progression tracking :-', trackedMetrics: [], records: [] }] })); };
+          const removeReassessmentTable = (id) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.filter(t => t.id !== id) })); };
+          const updateReassessmentTableTitle = (tableId, newTitle) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, title: newTitle } : t) })); };
+
+          const addMetricColumn = (tableId, metricObj) => { 
+              if (readOnly) return;
+              setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, trackedMetrics: [...t.trackedMetrics, metricObj] } : t) })); 
+              setIsMetricModalOpen(false); 
+              setActiveReassessmentTableId(null);
+          };
           
-          const addDateRow = (tableId) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: [...t.records, { id: generateId(), date: new Date().toISOString().split('T')[0], values: {} }] } : t) })); };
-          const removeDateRow = (tableId, recordId) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: t.records.filter(r => r.id !== recordId) } : t) })); };
-          const updateRecordDate = (tableId, recordId, date) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id !== tableId ? t : { ...t, records: t.records.map(r => r.id === recordId ? { ...r, date } : r) }) })); };
-          const updateSimpleCellValue = (tableId, recordId, metricId, value) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id !== tableId ? t : { ...t, records: t.records.map(rec => rec.id !== recordId ? rec : { ...rec, values: { ...rec.values, [metricId]: value } })}) })); };
-          const updateMultiFieldCellValue = (tableId, recordId, metricId, subField, value) => { setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id !== tableId ? t : { ...t, records: t.records.map(rec => rec.id !== recordId ? rec : { ...rec, values: { ...rec.values, [metricId]: { ...(rec.values[metricId]||{}), [subField]: value } } })}) })); };
+          const removeMetricColumn = (tableId, metricId) => { 
+              if (readOnly) return;
+              setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, trackedMetrics: t.trackedMetrics.filter(m => m.id !== metricId), records: t.records.map(rec => { const newValues = { ...rec.values }; delete newValues[metricId]; return { ...rec, values: newValues }; }) }; }) })); 
+          };
+          
+          const addDateRow = (tableId) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: [...t.records, { id: generateId(), date: new Date().toISOString().split('T')[0], values: {} }] } : t) })); };
+          const removeDateRow = (tableId, recordId) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: t.records.filter(r => r.id !== recordId) } : t) })); };
+          const updateRecordDate = (tableId, recordId, newDate) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, records: t.records.map(r => r.id === recordId ? { ...r, date: newDate } : r) }; }) })); };
+          const updateSimpleCellValue = (tableId, recordId, metricId, value) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, records: t.records.map(rec => { if (rec.id !== recordId) return rec; return { ...rec, values: { ...rec.values, [metricId]: value } }; })}; }) })); };
+          
+          const updateMultiFieldCellValue = (tableId, recordId, metricId, subField, value) => { 
+              if (readOnly) return;
+              setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { 
+                  if (t.id !== tableId) return t; 
+                  return { ...t, records: t.records.map(rec => { 
+                      if (rec.id !== recordId) return rec; 
+                      let newValues = { ...rec.values }; 
+                      let currentVal = newValues[metricId] || {}; 
+                      newValues[metricId] = { ...currentVal, [subField]: value }; 
+                      return { ...rec, values: newValues }; 
+                  })}; 
+              }) })); 
+          };
+
+          const formattedPrintDate = formData.date ? new Date(formData.date).toLocaleDateString('en-GB') : '';
 
           return (
             <div>
-              <div className="space-y-4 animate-in fade-in duration-300 print:hidden text-slate-800">
+              <div className="space-y-4 animate-in fade-in duration-300 print:hidden">
                 <div className="flex items-center justify-between px-1">
                   <button onClick={onCancel} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"><i className="ph-bold ph-arrow-left text-lg"></i> Back</button>
-                  <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold tracking-wider text-xs">IP: {formData.ipId}</div>
+                  <div className={`px-3 py-1 rounded-full font-bold tracking-wider text-xs ${readOnly ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>IP: {formData.ipId}</div>
                 </div>
 
                 <section className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200">
-                  <div className="flex items-center gap-2 mb-3 text-blue-800 border-b border-slate-100 pb-2"><i className="ph-bold ph-user text-base"></i><h2 className="font-semibold text-sm">Patient Details</h2></div>
+                  <div className={`flex items-center gap-2 mb-3 border-b border-slate-100 pb-2 ${readOnly ? 'text-emerald-800' : 'text-blue-800'}`}><i className="ph-bold ph-user text-base"></i><h2 className="font-semibold text-sm">Patient Details</h2></div>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                    <input type="text" name="name" value={formData.name} onChange={(e) => handleInputChange(e.target)} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none" placeholder="Name" />
-                    <input type="number" name="age" value={formData.age} onChange={(e) => handleInputChange(e.target)} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none" placeholder="Age" />
-                    <select name="gender" value={formData.gender} onChange={(e) => handleInputChange(e.target)} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none"><option value="">Gender</option><option value="Male">Male</option><option value="Female">Female</option></select>
-                    <input type="tel" name="contact" value={formData.contact} onChange={(e) => handleInputChange(e.target)} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none" placeholder="Mobile Number" />
+                    <input type="text" name="name" disabled={readOnly} value={formData.name || ''} onChange={(e) => handleInputChange(e.target)} className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none ${readOnly ? 'border-transparent font-medium text-slate-800' : 'border-slate-200'}`} placeholder="Name" />
+                    <input type="number" name="age" disabled={readOnly} value={formData.age || ''} onChange={(e) => handleInputChange(e.target)} className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none ${readOnly ? 'border-transparent font-medium text-slate-800' : 'border-slate-200'}`} placeholder="Age" />
+                    <select name="gender" disabled={readOnly} value={formData.gender || ''} onChange={(e) => handleInputChange(e.target)} className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none ${readOnly ? 'border-transparent font-medium text-slate-800' : 'border-slate-200'}`}><option value="">Gender</option><option value="Male">Male</option><option value="Female">Female</option></select>
+                    <input type="tel" name="contact" disabled={readOnly} value={formData.contact || ''} onChange={(e) => handleInputChange(e.target)} className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none ${readOnly ? 'border-transparent font-medium text-slate-800' : 'border-slate-200'}`} placeholder="Contact" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 mt-3">
-                    <textarea name="chiefComplaints" value={formData.chiefComplaints} onChange={(e) => handleInputChange(e.target)} rows="3" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none min-h-[60px]" placeholder="C/C (Chief Complaints)"></textarea>
-                    <textarea name="history" value={formData.history} onChange={(e) => handleInputChange(e.target)} rows="3" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none min-h-[60px]" placeholder="History"></textarea>
-                  </div>
+                  {(formData.chiefComplaints || formData.history || !readOnly) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 mt-3">
+                        <textarea name="chiefComplaints" disabled={readOnly} value={formData.chiefComplaints || ''} onChange={(e) => handleInputChange(e.target)} rows="3" className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none min-h-[60px] ${readOnly ? 'border-transparent font-medium text-slate-800 h-auto resize-none' : 'border-slate-200'}`} placeholder={readOnly ? '' : "C/C (Chief Complaints)"}></textarea>
+                        <textarea name="history" disabled={readOnly} value={formData.history || ''} onChange={(e) => handleInputChange(e.target)} rows="3" className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none min-h-[60px] ${readOnly ? 'border-transparent font-medium text-slate-800 h-auto resize-none' : 'border-slate-200'}`} placeholder={readOnly ? '' : "History"}></textarea>
+                      </div>
+                  )}
                 </section>
 
                 <section className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                      <div className="flex items-center gap-2 text-blue-800"><i className="ph-bold ph-stethoscope text-base"></i><h2 className="font-semibold text-sm">Assessment & Diagnosis</h2></div>
-                      <button onClick={() => handleAddCustomTable('assessment')} className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">+ Add Table</button>
+                      <div className={`flex items-center gap-2 ${readOnly ? 'text-emerald-800' : 'text-blue-800'}`}><i className="ph-bold ph-stethoscope text-base"></i><h2 className="font-semibold text-sm">Assessment & Diagnosis</h2></div>
+                      {!readOnly && <button onClick={() => handleAddCustomTable('assessment')} className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">+ Add Table</button>}
                   </div>
-                  <textarea name="assessmentNote" value={formData.assessmentNote} onChange={(e) => handleInputChange(e.target)} rows="4" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none min-h-[80px]" placeholder="Detailed assessment notes..."></textarea>
+                  
+                  <textarea name="assessmentNote" disabled={readOnly} value={formData.assessmentNote || ''} onChange={(e) => handleInputChange(e.target)} rows="4" className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none min-h-[80px] ${readOnly ? 'border-transparent font-medium text-slate-800 h-auto resize-none' : 'border-slate-200'}`} placeholder={readOnly ? '' : "Detailed assessment notes..."}></textarea>
                   
                   {formData.customTables.filter(t => t.section === 'assessment').length > 0 && (
                       <div className="flex flex-wrap items-start gap-4 mt-3">
-                          {formData.customTables.filter(t => t.section === 'assessment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={handleUpdateCustomTable} removeTable={() => handleRemoveCustomTable(table.id)} />))}
+                          {formData.customTables.filter(t => t.section === 'assessment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={handleUpdateCustomTable} removeTable={() => handleRemoveCustomTable(table.id)} readOnly={readOnly} />))}
                       </div>
                   )}
+
                   <div className="relative mt-2">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-blue-700">Diagnosis:</div>
-                    <input type="text" name="diagnosis" value={formData.diagnosis || ''} onChange={(e) => handleInputChange(e.target)} className="w-full pl-20 p-2 text-sm bg-blue-50/50 border border-blue-100 rounded-md outline-none font-medium text-blue-900" placeholder="e.g. Cervical Spondylosis" />
+                    <input type="text" name="diagnosis" disabled={readOnly} value={formData.diagnosis || ''} onChange={(e) => handleInputChange(e.target)} className={`w-full pl-20 p-2 text-sm rounded-md outline-none font-medium ${readOnly ? 'bg-transparent border-transparent text-slate-800' : 'bg-blue-50/50 border border-blue-100 text-blue-900'}`} placeholder={readOnly ? '' : "e.g. Cervical Spondylosis"} />
                   </div>
                 </section>
 
                 <section className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                       <div className="flex items-center gap-2 text-emerald-700"><i className="ph-bold ph-bandaids text-base"></i><h2 className="font-semibold text-sm">Treatment Plan / Advice</h2></div>
-                      <button onClick={() => handleAddCustomTable('treatment')} className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">+ Add Table</button>
+                      {!readOnly && <button onClick={() => handleAddCustomTable('treatment')} className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">+ Add Table</button>}
                   </div>
-                  <textarea name="treatmentNote" value={formData.treatmentNote} onChange={(e) => handleInputChange(e.target)} rows="4" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-md outline-none min-h-[80px]" placeholder="Treatment goals, planned exercises, electrotherapy modalities used..."></textarea>
+                  <textarea name="treatmentNote" disabled={readOnly} value={formData.treatmentNote || ''} onChange={(e) => handleInputChange(e.target)} rows="4" className={`w-full p-2 text-sm bg-slate-50 border rounded-md outline-none min-h-[80px] ${readOnly ? 'border-transparent font-medium text-slate-800 h-auto resize-none' : 'border-slate-200'}`} placeholder={readOnly ? '' : "Treatment goals, planned exercises, electrotherapy modalities used..."}></textarea>
+                  
                   {formData.customTables.filter(t => t.section === 'treatment').length > 0 && (
                       <div className="flex flex-wrap items-start gap-4 mt-3">
-                          {formData.customTables.filter(t => t.section === 'treatment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={handleUpdateCustomTable} removeTable={() => handleRemoveCustomTable(table.id)} />))}
+                          {formData.customTables.filter(t => t.section === 'treatment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={handleUpdateCustomTable} removeTable={() => handleRemoveCustomTable(table.id)} readOnly={readOnly} />))}
                       </div>
                   )}
                 </section>
@@ -946,238 +568,388 @@
                 <div className="space-y-4">
                     <div className="flex items-center justify-between mb-2 px-1">
                         <h2 className="font-semibold text-sm text-indigo-800 flex items-center gap-2"><i className="ph-bold ph-chart-line-up"></i> Reassessment Tracking</h2>
-                        <button onClick={() => handleAddCustomTable('reassessment')} className="flex items-center justify-center gap-1.5 bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-slate-300 transition-colors">+ Custom Table</button>
+                        {!readOnly && <button onClick={() => handleAddCustomTable('reassessment')} className="flex items-center justify-center gap-1.5 bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-slate-300 transition-colors">+ Custom Table</button>}
                     </div>
 
                     {formData.customTables.filter(t => t.section === 'reassessment').length > 0 && (
                         <div className="flex flex-wrap items-start gap-4 p-3 bg-white border border-slate-200 rounded-xl mb-4 shadow-sm">
-                            {formData.customTables.filter(t => t.section === 'reassessment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={handleUpdateCustomTable} removeTable={() => handleRemoveCustomTable(table.id)} />))}
+                            {formData.customTables.filter(t => t.section === 'reassessment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={handleUpdateCustomTable} removeTable={() => handleRemoveCustomTable(table.id)} readOnly={readOnly} />))}
                         </div>
                     )}
 
-                    {formData.reassessmentTables.map(rtable => (
+                    {formData.reassessmentTables.map((rtable, rIdx) => (
                         <section key={rtable.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                           <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="flex-1"><div contentEditable suppressContentEditableWarning onBlur={e => updateReassessmentTableTitle(rtable.id, e.currentTarget.textContent)} className="font-semibold text-[14px] text-indigo-800 outline-none min-w-[150px] border-b border-dashed border-indigo-300 inline-block">{rtable.title}</div></div>
-                            <div className="flex gap-2">
-                                {formData.reassessmentTables.length > 1 && ( <button onClick={() => removeReassessmentTable(rtable.id)} className="flex items-center gap-1.5 bg-red-50 text-red-600 px-3 py-1.5 rounded-md text-xs font-semibold"><i className="ph-bold ph-trash"></i> Remove</button> )}
-                                <button onClick={() => { setActiveReassessmentTableId(rtable.id); setIsMetricModalOpen(true); }} className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-md text-xs font-semibold"><i className="ph-bold ph-plus"></i> Add Column</button>
+                            <div className="flex-1">
+                              <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateReassessmentTableTitle(rtable.id, e.currentTarget.textContent)} className={`font-semibold text-[14px] text-indigo-800 outline-none min-w-[150px] inline-block ${readOnly ? 'border-transparent' : 'border-b border-dashed border-indigo-300 focus:border-indigo-600'}`}>{rtable.title}</div>
                             </div>
+                            {!readOnly && (
+                                <div className="flex gap-2">
+                                    {formData.reassessmentTables.length > 1 && (
+                                        <button onClick={() => removeReassessmentTable(rtable.id)} className="flex items-center justify-center gap-1.5 bg-red-50 text-red-600 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-red-100 transition-colors"><i className="ph-bold ph-trash"></i> Remove Table</button>
+                                    )}
+                                    <button onClick={() => { setActiveReassessmentTableId(rtable.id); setIsMetricModalOpen(true); }} className="flex items-center justify-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-indigo-200 transition-colors"><i className="ph-bold ph-plus"></i> Add Column</button>
+                                </div>
+                            )}
                           </div>
-                          <div className="overflow-x-auto p-2 bg-white">
-                            <table className="w-full table-auto border-collapse text-sm border border-slate-200 shadow-sm">
-                              <thead>
-                                <tr>
-                                  <th className="p-2 text-left text-[11px] font-semibold text-slate-700 border border-slate-200 w-24 align-bottom bg-slate-50">Date</th>
-                                  {rtable.trackedMetrics.map(metric => (
-                                      <th key={metric.id} className="text-left font-semibold text-slate-700 border border-slate-200 align-bottom p-0 bg-slate-50 group">
-                                        <div className="flex items-start justify-between p-1.5 px-2">
-                                          <div className="flex flex-col leading-tight whitespace-nowrap">
-                                            <span className="text-[9px] text-slate-400 uppercase tracking-wider">{metric.type}</span>
-                                            <span className="text-[11px]" title={metric.title}>{metric.title}</span>
-                                          </div>
-                                          <button onClick={() => removeMetricColumn(rtable.id, metric.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 p-0 ml-2"><i className="ph-bold ph-x text-xs"></i></button>
-                                        </div>
-                                        {metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT') && (<div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-600"><div className="flex-1 py-0.5 text-center border-r border-slate-200 font-bold">R</div><div className="flex-1 py-0.5 text-center font-bold">L</div></div>)}
-                                        {metric.type === 'ROM with VAS' && (<div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-500"><div className="flex-1 py-0.5 text-center border-r border-slate-200">VAS</div><div className="flex-1 py-0.5 text-center">ROM</div></div>)}
-                                      </th>
-                                  ))}
-                                  <th className="p-2 border border-slate-200 w-8 bg-slate-50"></th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {rtable.records.map(record => (
-                                  <tr key={record.id} className="border-b border-slate-200 hover:bg-slate-50/30">
-                                    <td className="p-0 border border-slate-200 align-top"><input type="date" value={record.date} onChange={(e) => updateRecordDate(rtable.id, record.id, e.target.value)} className="w-full h-full min-h-[32px] px-1 bg-transparent text-[11px] outline-none font-medium" /></td>
-                                    {rtable.trackedMetrics.map(metric => {
-                                      const cellValue = record.values[metric.id];
-                                      if (metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT')) {
-                                         return (
-                                           <td key={metric.id} className="p-0 border border-slate-200 align-top">
-                                              <div className="flex h-full min-h-[32px]">
-                                                  <div className="flex-1 border-r border-slate-200"><div contentEditable suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'r', e.currentTarget.textContent)} className="editable-cell text-center h-full p-1 min-w-[30px]" data-placeholder="-">{cellValue?.r || ''}</div></div>
-                                                  <div className="flex-1"><div contentEditable suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'l', e.currentTarget.textContent)} className="editable-cell text-center h-full p-1 min-w-[30px]" data-placeholder="-">{cellValue?.l || ''}</div></div>
-                                              </div>
-                                           </td>
-                                         );
-                                      }
-                                      if (metric.type === 'ROM with VAS') {
+
+                          {rtable.trackedMetrics.length > 0 ? (
+                              <div className="overflow-x-auto p-2 bg-white">
+                                <table className="w-full table-auto border-collapse text-sm border border-slate-200 shadow-sm">
+                                  <thead>
+                                    <tr>
+                                      <th className="p-2 text-left text-[11px] font-semibold text-slate-700 border border-slate-200 w-24 align-bottom bg-slate-50">Date</th>
+                                      {rtable.trackedMetrics.map(metric => {
                                         return (
-                                           <td key={metric.id} className="p-0 border border-slate-200 align-top">
-                                              <div className="flex h-full min-h-[32px]">
-                                                  <div className="flex-1 border-r border-slate-200"><div contentEditable suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'vas', e.currentTarget.textContent)} className="editable-cell text-center h-full p-1 min-w-[30px]" data-placeholder="VAS">{cellValue?.vas || ''}</div></div>
-                                                  <div className="flex-1"><div contentEditable suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'rom', e.currentTarget.textContent)} className="editable-cell text-center h-full p-1 min-w-[30px]" data-placeholder="ROM">{cellValue?.rom || ''}</div></div>
+                                          <th key={metric.id} className="text-left font-semibold text-slate-700 border border-slate-200 align-bottom p-0 bg-slate-50 group">
+                                            <div className="flex items-start justify-between p-1.5 px-2">
+                                              <div className="flex flex-col leading-tight whitespace-nowrap">
+                                                <span className="text-[9px] text-slate-400 uppercase tracking-wider">{metric.type}</span>
+                                                <span className="text-[11px]" title={metric.title}>{metric.title}</span>
+                                                {metric.normal && <span className="text-[9px] text-emerald-600 font-medium mt-0.5">Norm: {metric.normal}</span>}
                                               </div>
-                                           </td>
-                                         );
-                                      }
-                                      return (<td key={metric.id} className="p-0 border border-slate-200 align-top bg-white"><div contentEditable suppressContentEditableWarning onBlur={e => updateSimpleCellValue(rtable.id, record.id, metric.id, e.currentTarget.textContent)} className="editable-cell text-center h-full min-h-[32px] p-2" data-placeholder="-">{cellValue || ''}</div></td>);
-                                    })}
-                                    <td className="p-0 text-center align-middle border border-slate-200"><button onClick={() => removeDateRow(rtable.id, record.id)} className="w-full h-full min-h-[32px] flex items-center justify-center text-slate-300 hover:text-red-500"><i className="ph-bold ph-trash text-xs"></i></button></td>
-                                  </tr>
-                                ))}
-                                <tr><td colSpan={rtable.trackedMetrics.length + 2} className="p-0 border border-slate-200"><button onClick={() => addDateRow(rtable.id)} className="w-full flex justify-center py-2 text-xs text-indigo-600 font-semibold hover:bg-indigo-50 bg-slate-50">+ Add Session Date</button></td></tr>
-                              </tbody>
-                            </table>
-                          </div>
+                                              {!readOnly && <button onClick={() => removeMetricColumn(rtable.id, metric.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 p-0 ml-2"><i className="ph-bold ph-x text-xs"></i></button>}
+                                            </div>
+                                            {metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT') && (
+                                              <div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-600"><div className="flex-1 py-0.5 text-center border-r border-slate-200 font-bold">R</div><div className="flex-1 py-0.5 text-center font-bold">L</div></div>
+                                            )}
+                                            {metric.type === 'ROM with VAS' && (
+                                              <div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-500"><div className="flex-1 py-0.5 text-center border-r border-slate-200">VAS</div><div className="flex-1 py-0.5 text-center">ROM</div></div>
+                                            )}
+                                          </th>
+                                        );
+                                      })}
+                                      {!readOnly && <th className="p-2 border border-slate-200 w-8 bg-slate-50"></th>}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {rtable.records.map(record => (
+                                      <tr key={record.id} className="border-b border-slate-200 hover:bg-slate-50/30">
+                                        <td className="p-0 border border-slate-200 align-top bg-white">
+                                          <input type="date" disabled={readOnly} value={record.date} onChange={(e) => updateRecordDate(rtable.id, record.id, e.target.value)} className={`w-full h-full min-h-[32px] px-1 text-[11px] font-medium outline-none ${readOnly ? 'bg-transparent text-slate-800' : 'bg-transparent focus:text-blue-600'}`} />
+                                        </td>
+                                        {rtable.trackedMetrics.map(metric => {
+                                          const cellValue = record.values[metric.id];
+                                          if (metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT')) {
+                                             return (
+                                               <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
+                                                  <div className="flex h-full min-h-[32px]">
+                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'r', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.r || ''}</div></div>
+                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'l', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.l || ''}</div></div>
+                                                  </div>
+                                               </td>
+                                             );
+                                          }
+                                          if (metric.type === 'ROM with VAS') {
+                                            return (
+                                               <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
+                                                  <div className="flex h-full min-h-[32px]">
+                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'vas', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="VAS">{cellValue?.vas || ''}</div></div>
+                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'rom', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="ROM">{cellValue?.rom || ''}</div></div>
+                                                  </div>
+                                               </td>
+                                             );
+                                          }
+                                          return (
+                                            <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
+                                              <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateSimpleCellValue(rtable.id, record.id, metric.id, e.currentTarget.textContent)} className={`editable-cell text-center h-full min-h-[32px] p-2 ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue || ''}</div>
+                                            </td>
+                                          );
+                                        })}
+                                        {!readOnly && <td className="p-0 text-center align-middle border border-slate-200"><button onClick={() => removeDateRow(rtable.id, record.id)} className="w-full h-full min-h-[32px] flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"><i className="ph-bold ph-trash text-xs"></i></button></td>}
+                                      </tr>
+                                    ))}
+                                    {!readOnly && (
+                                        <tr>
+                                          <td colSpan={rtable.trackedMetrics.length + 2} className="p-0 border border-slate-200">
+                                            <button onClick={() => addDateRow(rtable.id)} className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors bg-slate-50"><i className="ph-bold ph-plus"></i> Add Session Date Record</button>
+                                          </td>
+                                        </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                          ) : (
+                              <div className="p-4 text-sm text-slate-500 text-center italic bg-white">No core metrics tracked in this table yet.</div>
+                          )}
                         </section>
                     ))}
-                    <button onClick={addReassessmentTable} className="w-full flex items-center justify-center gap-1.5 py-3 mt-4 text-sm text-indigo-600 font-bold hover:bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-xl transition-colors">+ Add Another Reassessment Table</button>
+                    
+                    {!readOnly && (
+                        <button onClick={addReassessmentTable} className="w-full flex items-center justify-center gap-1.5 py-3 mt-4 text-sm text-indigo-600 font-bold hover:bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-xl transition-colors">
+                            <i className="ph-bold ph-plus"></i> Add Another Reassessment Table
+                        </button>
+                    )}
                 </div>
 
-                <div className="flex flex-wrap gap-3 justify-end pt-2 pb-8 items-center">
-                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm mr-auto">
-                      <span className="text-xs font-semibold text-slate-500 uppercase">Date:</span>
-                      <input type="date" name="date" value={formData.date || ''} onChange={(e) => handleInputChange(e.target)} className="text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer border-none" />
+                <div className="flex flex-wrap gap-3 justify-end pt-2 pb-8">
+                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm mr-auto sm:mr-0">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date:</span>
+                      <input type="date" name="date" disabled={readOnly} value={formData.date || ''} onChange={(e) => handleInputChange(e.target)} className={`text-sm font-medium outline-none ${readOnly ? 'bg-transparent text-slate-800 cursor-default' : 'bg-transparent text-slate-700 cursor-pointer'}`} />
                   </div>
-                  
-                  {/* PUBLISH TOGGLE */}
-                  <label className="flex items-center gap-2 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition-colors">
-                      <input type="checkbox" checked={formData.isPublished || false} onChange={e => handleInputChange({name: 'isPublished', value: e.target.checked})} className="w-4 h-4 accent-emerald-600" />
-                      <span className="text-sm font-bold text-emerald-800">Publish to Patient</span>
-                  </label>
-
-                  <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50" onClick={() => window.print()}><i className="ph-bold ph-printer"></i> Print</button>
-                  <button onClick={() => { onSave(formData); onCancel(); }} className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"><i className="ph-bold ph-floppy-disk"></i> Save</button>
+                  <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm" onClick={() => window.print()}><i className="ph-bold ph-printer text-base"></i> Print</button>
+                  {!readOnly && <button onClick={() => onSave(formData)} className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm shadow-blue-200"><i className="ph-bold ph-floppy-disk text-base"></i> Save to Cloud</button>}
                 </div>
               </div>
-              <PatientReadOnlyView formData={formData} />
-              {isMetricModalOpen && <AddMetricModal onClose={() => { setIsMetricModalOpen(false); setActiveReassessmentTableId(null); }} onAdd={(metricObj) => addMetricColumn(activeReassessmentTableId, metricObj)} />}
-            </div>
-          );
-        }
 
-        // --- PATIENT/PRINT READ-ONLY VIEW ---
-        function PatientReadOnlyView({ formData }) {
-            const dateStr = formData.date ? new Date(formData.date).toLocaleDateString('en-GB') : '';
-            return (
+              {/* --- 🖨️ PRINT VIEW (Unchanged core print styling, auto-adapts to new structure) --- */}
               <div className="hidden print:block bg-white text-[#1e40af] text-[16px] font-sans h-full w-full relative">
                   <div className="flex justify-between items-start pb-2">
                       <div>
-                          <h1 className="text-[38px] font-bold italic tracking-wide text-[#1e40af]" style={{ textShadow: "0px 0px 1px #1e40af", lineHeight: "1" }}>{formData.clinicDetails?.name || "Dr. Arpan Das (PT)"}</h1>
-                          <p className="text-[16px] mt-2 font-bold text-[#1e40af]">{formData.clinicDetails?.degree || "BPT (KPC Medical College and Hospital)"}</p>
-                          <p className="text-[16px] font-bold text-[#1e40af]">{formData.clinicDetails?.role || "Consultant Physiotherapist"}</p>
+                          <h1 className="text-[38px] font-bold italic tracking-wide text-[#1e40af]" style={{ textShadow: "0px 0px 1px #1e40af", lineHeight: "1" }}>Dr. Arpan Das (PT)</h1>
+                          <p className="text-[16px] mt-2 font-bold text-[#1e40af]">BPT (KPC Medical College and Hospital)</p>
+                          <p className="text-[16px] font-bold text-[#1e40af]">Consultant Physiotherapist</p>
                       </div>
                       <div className="text-right flex flex-col items-end text-[#1e40af] pt-1">
-                          <div className="flex items-center gap-1.5 font-black text-2xl mb-6"><i className="ph-fill ph-phone-call text-[28px]"></i> {formData.clinicDetails?.phone || "+91 9641568109"}</div>
-                          <div className="text-[16px] flex items-center gap-2 font-semibold"><span>Date:</span> <span className="border-b border-[#1e40af] w-28 text-center text-slate-800 font-bold pb-0.5">{dateStr}</span></div>
+                          <div className="flex items-center gap-1.5 font-black text-2xl mb-6">
+                              <i className="ph-fill ph-phone-call text-[28px]"></i> +91 9641568109
+                          </div>
+                          <div className="text-[16px] flex items-center gap-2 font-semibold">
+                              <span>Date:</span> <span className="border-b border-[#1e40af] w-28 text-center text-slate-800 font-bold pb-0.5">{formattedPrintDate}</span>
+                          </div>
                       </div>
                   </div>
+
                   <div className="border-b border-[#1e40af] mb-1.5"></div>
+
                   <table className="main-print-table">
                       <thead className="print-table-header">
-                          <tr><td className="pb-4 pt-2">
+                          <tr>
+                              <td className="pb-4 pt-2">
                                   <div className="flex justify-between items-end pb-2 text-[16px] font-bold text-[#1e40af]">
-                                      <div className="flex-1 flex items-end"><span className="whitespace-nowrap">Patient's name:</span><span className="flex-1 ml-2 mr-4 px-2 text-slate-800 font-bold pb-0.5">{formData.name}</span></div>
-                                      <div className="w-24 flex items-end"><span className="whitespace-nowrap">Age:</span><span className="flex-1 ml-2 mr-4 px-2 text-center text-slate-800 font-bold pb-0.5">{formData.age}</span></div>
-                                      <div className="w-36 flex items-end"><span className="whitespace-nowrap">Gender:</span><span className="flex-1 ml-2 mr-4 px-2 text-center text-slate-800 font-bold pb-0.5">{formData.gender}</span></div>
-                                      <div className="w-32 flex items-end"><span className="whitespace-nowrap">UPID:</span><span className="flex-1 ml-2 px-2 text-center text-slate-800 font-bold pb-0.5">{formData.ipId}</span></div>
+                                      <div className="flex-1 flex items-end">
+                                          <span className="whitespace-nowrap">Patient's name:</span> 
+                                          <span className="flex-1 ml-2 mr-4 px-2 text-slate-800 font-bold pb-0.5">{formData.name}</span>
+                                      </div>
+                                      <div className="w-24 flex items-end">
+                                          <span className="whitespace-nowrap">Age:</span> 
+                                          <span className="flex-1 ml-2 mr-4 px-2 text-center text-slate-800 font-bold pb-0.5">{formData.age}</span>
+                                      </div>
+                                      <div className="w-36 flex items-end">
+                                          <span className="whitespace-nowrap">Gender:</span> 
+                                          <span className="flex-1 ml-2 mr-4 px-2 text-center text-slate-800 font-bold pb-0.5">{formData.gender}</span>
+                                      </div>
+                                      <div className="w-32 flex items-end">
+                                          <span className="whitespace-nowrap">UPID:</span> 
+                                          <span className="flex-1 ml-2 px-2 text-center text-slate-800 font-bold pb-0.5">{formData.ipId}</span>
+                                      </div>
                                   </div>
                                   <div className="border-b border-[#1e40af]"></div>
-                              </td></tr>
+                              </td>
+                          </tr>
                       </thead>
+
                       <tbody>
-                          <tr className="main-print-row"><td className="pt-2 px-2 pb-4">
-                                  <div className="text-[#1e40af] mb-4"><span className="font-bold text-[20px]">Chief Complaint :-</span><p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap">{formData.chiefComplaints || "\u00A0"}</p></div>
-                                  <div className="text-[#1e40af]"><span className="font-bold text-[20px]">History :-</span><p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap">{formData.history || "\u00A0"}</p></div>
-                          </td></tr>
-                          <tr className="main-print-row-allow-break"><td className="px-2 pb-6">
-                                  <div className="text-[#1e40af]">
-                                      <span className="font-bold text-[20px] block mb-2">Assessment :-</span><p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap">{formData.assessmentNote || "\u00A0"}</p>
-                                      {formData.customTables?.filter(t => t.section === 'assessment').length > 0 && (<div className="flex flex-wrap items-start gap-4 mt-4 pl-4 pr-2">{formData.customTables.filter(t => t.section === 'assessment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={()=>{}} removeTable={()=>{}} readOnly={true} />))}</div>)}
+                          <tr className="main-print-row">
+                              <td className="pt-2 px-2 pb-4">
+                                  <div className="text-[#1e40af] mb-4">
+                                      <span className="font-bold text-[20px]">Chief Complaint :-</span>
+                                      <p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap">{formData.chiefComplaints || "\u00A0"}</p>
                                   </div>
-                          </td></tr>
-                          {formData.diagnosis && (<tr className="main-print-row"><td className="px-2 pb-6"><div className="text-[#1e40af]"><span className="font-bold text-[20px]">Diagnosis:</span><span className="ml-2 text-slate-900 font-bold text-[19px]">{formData.diagnosis}</span></div></td></tr>)}
-                          <tr className="main-print-row-allow-break"><td className="px-2 pb-6">
                                   <div className="text-[#1e40af]">
-                                      <span className="font-bold text-[20px] block mb-2">Treatment Plan / Advice :-</span><p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap leading-relaxed">{formData.treatmentNote || "\u00A0"}</p>
-                                      {formData.customTables?.filter(t => t.section === 'treatment').length > 0 && (<div className="flex flex-wrap items-start gap-4 mt-4 pl-4 pr-2">{formData.customTables.filter(t => t.section === 'treatment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={()=>{}} removeTable={()=>{}} readOnly={true} />))}</div>)}
+                                      <span className="font-bold text-[20px]">History :-</span>
+                                      <p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap">{formData.history || "\u00A0"}</p>
                                   </div>
-                          </td></tr>
-                          {formData.customTables?.filter(t => t.section === 'reassessment').length > 0 && (
-                              <tr className="main-print-row"><td className="px-2 pb-6 text-[#1e40af]"><span className="font-bold text-[20px] block mb-2">Reassessment Data :-</span><div className="flex flex-wrap items-start gap-4 pl-4 pr-2">{formData.customTables.filter(t => t.section === 'reassessment').map(table => (<CustomTableEditor key={table.id} table={table} updateTable={()=>{}} removeTable={()=>{}} readOnly={true} />))}</div></td></tr>
+                              </td>
+                          </tr>
+
+                          <tr className="main-print-row-allow-break">
+                              <td className="px-2 pb-6">
+                                  <div className="text-[#1e40af]">
+                                      <span className="font-bold text-[20px] block mb-2">Assessment :-</span>
+                                      <p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap">{formData.assessmentNote || "\u00A0"}</p>
+                                      {formData.customTables.filter(t => t.section === 'assessment').length > 0 && (
+                                          <div className="flex flex-wrap items-start gap-4 mt-4 pl-4 pr-2">
+                                              {formData.customTables.filter(t => t.section === 'assessment').map(table => (
+                                                  <CustomTableEditor key={table.id} table={table} updateTable={()=>{}} removeTable={()=>{}} readOnly={true} />
+                                              ))}
+                                          </div>
+                                      )}
+                                  </div>
+                              </td>
+                          </tr>
+
+                          {formData.diagnosis && (
+                              <tr className="main-print-row">
+                                  <td className="px-2 pb-6">
+                                      <div className="text-[#1e40af]">
+                                          <span className="font-bold text-[20px]">Diagnosis:</span>
+                                          <span className="ml-2 text-slate-900 font-bold text-[19px]">{formData.diagnosis}</span>
+                                      </div>
+                                  </td>
+                              </tr>
                           )}
-                          {formData.reassessmentTables?.map(rtable => (
-                              <tr key={rtable.id} className="main-print-row"><td className="px-2 pb-6 text-[#1e40af]">
+
+                          <tr className="main-print-row-allow-break">
+                              <td className="px-2 pb-6">
+                                  <div className="text-[#1e40af]">
+                                      <span className="font-bold text-[20px] block mb-2">Treatment Plan / Advice :-</span>
+                                      <p className="mt-1 ml-4 text-slate-900 text-[18px] whitespace-pre-wrap leading-relaxed">{formData.treatmentNote || "\u00A0"}</p>
+                                      {formData.customTables.filter(t => t.section === 'treatment').length > 0 && (
+                                          <div className="flex flex-wrap items-start gap-4 mt-4 pl-4 pr-2">
+                                              {formData.customTables.filter(t => t.section === 'treatment').map(table => (
+                                                  <CustomTableEditor key={table.id} table={table} updateTable={()=>{}} removeTable={()=>{}} readOnly={true} />
+                                              ))}
+                                          </div>
+                                      )}
+                                  </div>
+                              </td>
+                          </tr>
+
+                          {formData.customTables.filter(t => t.section === 'reassessment').length > 0 && (
+                              <tr className="main-print-row">
+                                  <td className="px-2 pb-6 text-[#1e40af]">
+                                      <span className="font-bold text-[20px] block mb-2">Reassessment Data :-</span>
+                                      <div className="flex flex-wrap items-start gap-4 pl-4 pr-2">
+                                          {formData.customTables.filter(t => t.section === 'reassessment').map(table => (
+                                              <CustomTableEditor key={table.id} table={table} updateTable={()=>{}} removeTable={()=>{}} readOnly={true} />
+                                          ))}
+                                      </div>
+                                  </td>
+                              </tr>
+                          )}
+
+                          {formData.reassessmentTables.map((rtable, rIdx) => (
+                              <tr key={rtable.id} className="main-print-row">
+                                  <td className="px-2 pb-6 text-[#1e40af]">
                                       <span className="font-bold text-[20px] block mb-3">{rtable.title}</span>
                                       {rtable.trackedMetrics.length > 0 ? (
                                         <div className="pl-4 pr-2 w-full">
                                             <table className="w-full table-auto border-collapse text-[16px] text-slate-900 border border-[#1e40af] print-break-inside-avoid">
-                                                <thead><tr>
+                                                <thead>
+                                                    <tr>
                                                         <th className="p-2 text-left border border-[#1e40af] w-28 text-[#1e40af] font-bold">Date</th>
                                                         {rtable.trackedMetrics.map(metric => (
                                                             <th key={metric.id} className="p-1 border border-[#1e40af] text-[#1e40af] font-bold text-center align-top">
-                                                                <div className="flex flex-col h-full justify-between"><span className="leading-tight px-1 mb-1.5 pt-1">{metric.title}</span>{metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT') && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">R</div><div className="flex-1 py-1 font-bold">L</div></div> )}{metric.type === 'ROM with VAS' && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">VAS</div><div className="flex-1 py-1 font-bold">ROM</div></div> )}</div>
+                                                                <div className="flex flex-col h-full justify-between">
+                                                                    <span className="leading-tight px-1 mb-1.5 pt-1">{metric.title}</span>
+                                                                    {metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT') && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">R</div><div className="flex-1 py-1 font-bold">L</div></div> )}
+                                                                    {metric.type === 'ROM with VAS' && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">VAS</div><div className="flex-1 py-1 font-bold">ROM</div></div> )}
+                                                                </div>
                                                             </th>
                                                         ))}
-                                                </tr></thead>
+                                                    </tr>
+                                                </thead>
                                                 <tbody>
                                                     {rtable.records.map(record => (
                                                         <tr key={record.id} className="print-break-inside-avoid">
                                                             <td className="p-2 border border-[#1e40af] whitespace-nowrap align-top font-medium">{record.date ? new Date(record.date).toLocaleDateString('en-GB') : ''}</td>
                                                             {rtable.trackedMetrics.map(metric => {
                                                                 const cellValue = record.values[metric.id];
-                                                                if (metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT')) return ( <td key={metric.id} className="p-0 border border-[#1e40af] align-top"><div className="flex h-full min-h-[32px]"><div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5">{cellValue?.r || '-'}</div><div className="flex-1 flex items-center justify-center p-1.5">{cellValue?.l || '-'}</div></div></td> );
-                                                                if (metric.type === 'ROM with VAS') return ( <td key={metric.id} className="p-0 border border-[#1e40af] align-top"><div className="flex h-full min-h-[32px]"><div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5">{cellValue?.vas || '-'}</div><div className="flex-1 flex items-center justify-center p-1.5">{cellValue?.rom || '-'}</div></div></td> );
+                                                                if (metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT')) {
+                                                                    return ( <td key={metric.id} className="p-0 border border-[#1e40af] align-top"><div className="flex h-full min-h-[32px]"><div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5">{cellValue?.r || '-'}</div><div className="flex-1 flex items-center justify-center p-1.5">{cellValue?.l || '-'}</div></div></td> );
+                                                                }
+                                                                if (metric.type === 'ROM with VAS') {
+                                                                    return (
+                                                                        <td key={metric.id} className="p-0 border border-[#1e40af] align-top">
+                                                                            <div className="flex h-full min-h-[32px]">
+                                                                                <div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5">{cellValue?.vas || '-'}</div>
+                                                                                <div className="flex-1 flex items-center justify-center p-1.5">{cellValue?.rom || '-'}</div>
+                                                                            </div>
+                                                                        </td>
+                                                                    );
+                                                                }
                                                                 return ( <td key={metric.id} className="p-2 border border-[#1e40af] text-center align-middle">{cellValue || '-'}</td> );
                                                             })}
                                                         </tr>
                                                     ))}
+                                                    {rtable.records.length === 0 && ( <tr className="print-break-inside-avoid"><td colSpan={rtable.trackedMetrics.length + 1} className="p-3 border border-[#1e40af] text-center italic text-slate-500">No records added.</td></tr> )}
                                                 </tbody>
                                             </table>
                                         </div>
-                                      ) : null }
-                              </td></tr>
+                                      ) : ( <p className="text-slate-500 italic ml-4 mt-2 hidden print:block text-[14px]">No core metrics tracked.</p> )}
+                                  </td>
+                              </tr>
                           ))}
                       </tbody>
                   </table>
               </div>
-            );
+              {isMetricModalOpen && <AddMetricModal onClose={() => { setIsMetricModalOpen(false); setActiveReassessmentTableId(null); }} onAdd={(metricObj) => addMetricColumn(activeReassessmentTableId, metricObj)} />}
+            </div>
+          );
         }
 
-        // AddMetric Modal Component
+        // --- ADD METRIC MODAL ---
         function AddMetricModal({ onClose, onAdd }) {
           const [type, setType] = useState('ROM'); const [romMode, setRomMode] = useState('Active');
           const jointsList = Object.keys(JOINTS_DATA); const [selectedJointGroup, setSelectedJointGroup] = useState(jointsList[2]); 
           const [selectedMovementIdx, setSelectedMovementIdx] = useState(0); const [side, setSide] = useState('R'); const [customName, setCustomName] = useState('');
+          
           const handleAdd = () => {
-            let title = ''; const movement = JOINTS_DATA[selectedJointGroup][selectedMovementIdx]; let isBilateral = false; let normalVal = '';
+            let title = ''; const movement = JOINTS_DATA[selectedJointGroup][selectedMovementIdx];
+            let isBilateral = false; let normalVal = '';
+
             if (type === 'ROM' || type === 'ROM with VAS') {
               title += `${romMode} ${selectedJointGroup} ${movement.name}`; normalVal = movement.normal;
-              if (type === 'ROM with VAS' && movement.type === 'bilateral') title += ` (${side})`; else if (type === 'ROM') isBilateral = movement.type === 'bilateral';
-            } else if (type === 'MMT') { title += `${selectedJointGroup} ${movement.name}`; isBilateral = movement.type === 'bilateral'; normalVal = '5/5'; 
-            } else if (type === 'VAS') { title = customName || 'VAS'; isBilateral = false; normalVal = '0-10';
-            } else { title = customName || 'Custom Column'; isBilateral = false; normalVal = ''; }
+              if (type === 'ROM with VAS' && movement.type === 'bilateral') title += ` (${side})`;
+              else if (type === 'ROM') isBilateral = movement.type === 'bilateral';
+            } 
+            else if (type === 'MMT') { 
+              title += `${selectedJointGroup} ${movement.name}`; isBilateral = movement.type === 'bilateral'; normalVal = '5/5'; 
+            } 
+            else if (type === 'VAS') { title = customName || 'VAS'; isBilateral = false; normalVal = '0-10'; }
+            else { title = customName || 'Custom Column'; isBilateral = false; normalVal = ''; }
+
             onAdd({ id: generateId(), type, title, isBilateral, normal: normalVal });
           };
-          const currentMovements = JOINTS_DATA[selectedJointGroup]; const selectedMovement = currentMovements[selectedMovementIdx] || currentMovements[0]; 
+          
+          const currentMovements = JOINTS_DATA[selectedJointGroup]; 
+          const selectedMovement = currentMovements[selectedMovementIdx] || currentMovements[0]; 
+
           return (
-            <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-3 print:hidden">
-              <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden text-slate-800 border-none">
-                <div className="flex justify-between items-center p-3 border-b border-slate-100 bg-slate-50"><h3 className="font-bold text-sm">New Tracker Column</h3><button onClick={onClose} className="p-1 text-slate-400"><i className="ph-bold ph-x text-lg"></i></button></div>
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 print:hidden">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center p-3 border-b border-slate-100 bg-slate-50"><h3 className="font-bold text-sm text-slate-800">New Tracker Column</h3><button onClick={onClose} className="p-1 text-slate-400 hover:bg-slate-200 rounded-full"><i className="ph-bold ph-x text-lg"></i></button></div>
                 <div className="p-4 space-y-4">
-                  <div><label className="text-[11px] font-semibold text-slate-500">Metric Type</label><select value={type} onChange={(e) => setType(e.target.value)} className="w-full p-2 border border-slate-200 rounded-lg"><option value="ROM">ROM</option><option value="MMT">MMT</option><option value="ROM with VAS">ROM + VAS</option><option value="VAS">VAS</option><option value="Other">Other</option></select></div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Metric Type</label>
+                    <select value={type} onChange={(e) => setType(e.target.value)} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="ROM">Range of Motion (ROM)</option>
+                        <option value="MMT">Manual Muscle Test (MMT)</option>
+                        <option value="ROM with VAS">ROM + VAS (Single Side)</option>
+                        <option value="VAS">VAS (Pain Scale)</option>
+                        <option value="Other">Other / Treatment</option>
+                    </select>
+                  </div>
                   {(type === 'ROM' || type === 'ROM with VAS' || type === 'MMT') && (
                     <>
-                      {(type === 'ROM' || type === 'ROM with VAS') && (<div className="flex gap-4"><label className="flex gap-1"><input type="radio" checked={romMode === 'Active'} onChange={() => setRomMode('Active')} /> Active</label><label className="flex gap-1"><input type="radio" checked={romMode === 'Passive'} onChange={() => setRomMode('Passive')} /> Passive</label></div>)}
+                      {(type === 'ROM' || type === 'ROM with VAS') && (
+                        <div className="flex gap-4"><label className="flex items-center gap-1.5 text-sm"><input type="radio" checked={romMode === 'Active'} onChange={() => setRomMode('Active')} className="accent-blue-600" /> Active</label><label className="flex items-center gap-1.5 text-sm"><input type="radio" checked={romMode === 'Passive'} onChange={() => setRomMode('Passive')} className="accent-blue-600" /> Passive</label></div>
+                      )}
                       <div className="grid grid-cols-2 gap-3">
-                        <div><label className="text-[11px] font-semibold text-slate-500">Joint</label><select value={selectedJointGroup} onChange={(e) => { setSelectedJointGroup(e.target.value); setSelectedMovementIdx(0); }} className="w-full p-2 border border-slate-200 rounded-lg">{Object.keys(JOINTS_DATA).map(j => <option key={j} value={j}>{j}</option>)}</select></div>
-                        <div><label className="text-[11px] font-semibold text-slate-500">Movement</label><select value={selectedMovementIdx} onChange={(e) => setSelectedMovementIdx(Number(e.target.value))} className="w-full p-2 border border-slate-200 rounded-lg">{currentMovements.map((m, i) => <option key={i} value={i}>{m.name}</option>)}</select></div>
+                        <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Joint</label>
+                            <select value={selectedJointGroup} onChange={(e) => { setSelectedJointGroup(e.target.value); setSelectedMovementIdx(0); }} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                                {Object.keys(JOINTS_DATA).map(j => <option key={j} value={j}>{j}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Movement</label>
+                            <select value={selectedMovementIdx} onChange={(e) => setSelectedMovementIdx(Number(e.target.value))} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                                {currentMovements.map((m, i) => <option key={i} value={i}>{m.name}</option>)}
+                            </select>
+                        </div>
                       </div>
-                      {type === 'ROM with VAS' && selectedMovement.type === 'bilateral' && (<div className="flex gap-4"><label className="flex gap-1"><input type="radio" checked={side === 'R'} onChange={() => setSide('R')} /> Right</label><label className="flex gap-1"><input type="radio" checked={side === 'L'} onChange={() => setSide('L')} /> Left</label></div>)}
+                      {type === 'ROM with VAS' && selectedMovement.type === 'bilateral' && (
+                        <div className="flex gap-4 pt-1"><label className="flex items-center gap-1.5 text-sm"><input type="radio" checked={side === 'R'} onChange={() => setSide('R')} className="accent-blue-600" /> Right Side</label><label className="flex items-center gap-1.5 text-sm"><input type="radio" checked={side === 'L'} onChange={() => setSide('L')} className="accent-blue-600" /> Left Side</label></div>
+                      )}
                     </>
                   )}
-                  {(type === 'Other' || type === 'VAS') && ( <div><label className="text-[11px] font-semibold text-slate-500">Name</label><input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="Name" className="w-full p-2 border border-slate-200 rounded-lg" /></div> )}
+                  {(type === 'Other' || type === 'VAS') && ( 
+                      <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Name</label>
+                          <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder={type === 'VAS' ? "e.g. Resting VAS" : "e.g. Current Treatment"} className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500" />
+                      </div> 
+                  )}
                 </div>
-                <div className="p-3 border-t border-slate-100 bg-slate-50"><button onClick={handleAdd} className="w-full py-2 bg-indigo-600 text-white rounded-lg">Add Column</button></div>
+                <div className="p-3 border-t border-slate-100 bg-slate-50"><button onClick={handleAdd} className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-colors">Add Column</button></div>
               </div>
             </div>
           );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('react-tracker-root'));
-        root.render(<TrackerApp />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
-
