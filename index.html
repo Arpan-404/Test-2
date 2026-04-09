@@ -4,324 +4,517 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physio - The Therapeutic Moves</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preload" as="style" href="style.css">
-    <link rel="dns-prefetch" href="https://www.gstatic.com">
-    <link rel="dns-prefetch" href="https://firebaseapp.com">
+    <style>
+        /* ================================
+           RESET & BASE STYLES
+           ================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #e8f5f3 0%, #f8f9fa 100%); }
+
+        /* ================================
+           SKELETON STYLES (Modern Loading)
+           ================================ */
+        .skeleton-loader { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .skeleton-loader.hidden { display: none; }
+        .skeleton-card { width: 140px; height: 140px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 20px; flex-shrink: 0; }
+        .services-skeleton, .products-skeleton { display: flex; gap: 1rem; overflow-x: hidden; }
+        .skeleton-service-card, .skeleton-product-card { width: 260px; height: 200px; flex-shrink: 0; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 15px; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* ================================
+           HEADER, NAVIGATION & SEARCH
+           ================================ */
+        .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease-in-out; height: 55px; gap: 10px; }
+        .header.hidden { transform: translateY(-100%); }
+        .logo { display: flex; align-items: center; gap: 8px; color: #2c8577; font-weight: 700; font-size: 1.05rem; white-space: nowrap; text-decoration: none; }
+        .logo-img { width: 35px; height: 35px; border-radius: 8px; object-fit: cover; }
+        
+        .search-container { flex-grow: 1; display: flex; justify-content: flex-end; position: relative; }
+        .search-input { width: 100%; max-width: 200px; padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid #e0e0e0; background: #f8f9fa; transition: all 0.3s ease; font-size: 0.9rem; outline: none; }
+        .search-input:focus { max-width: 350px; background: white; border-color: #2c8577; box-shadow: 0 0 0 3px rgba(44, 133, 119, 0.1); }
+        .search-results { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; max-height: 70vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1002; display: none; padding: 1rem; border: 1px solid #f0f0f0; }
+        .search-results.active { display: block; }
+        .search-result-item { padding: 0.8rem; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s; border-radius: 8px; text-decoration: none; color: inherit; }
+        .search-result-item:hover { background: #f8f9fa; }
+        .search-result-item:last-child { border-bottom: none; }
+        .search-category-title { font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 5px; font-weight: bold; }
+
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 5px; flex-shrink: 0; }
+        .hamburger span { width: 22px; height: 2px; background: #2c8577; margin: 2.5px 0; transition: 0.3s; border-radius: 2px; }
+        .mobile-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s ease; padding: 2rem 0; }
+        .mobile-menu.active { right: 0; }
+        .mobile-menu ul { list-style: none; padding: 0; }
+        .mobile-menu ul li a { display: block; padding: 1rem 2rem; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.3s; font-size: 1.1rem; text-decoration: none; color: #333; }
+        .mobile-menu ul li a:hover { background: #f8f9fa; }
+        .mobile-menu ul li.admin-link a { margin-top: 2rem; background: #e8f5f3; color: #2c8577; font-weight: 600; }
+        .close-menu { position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: #2c8577; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* ================================
+           MAIN LAYOUT & HERO SLIDER
+           ================================ */
+        .main { margin-top: 55px; }
+        .page { display: none; min-height: calc(100vh - 55px); padding: 1rem; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .page-header { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
+        .page-title { font-size: 2rem; color: #2c8577; margin-bottom: 1rem; font-weight: 700; }
+        
+        .back-btn { display: inline-block; background: #e8f5f3; color: #2c8577; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; text-decoration: none; margin-bottom: 1.5rem; }
+        .back-btn:hover { background: #d1f2eb; }
+        
+        .hero-container { width: 100%; aspect-ratio: 16/7; position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 1rem; background: #e8f5f3; }
+        .slider-track { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
+        .slide { min-width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; }
+        .slider-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); color: #2c8577; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; display:flex; align-items:center; justify-content:center; font-size: 1.2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: 0.3s; }
+        .slider-btn:hover { background: white; color: #1a5c51; }
+        .slider-btn.prev { left: 10px; }
+        .slider-btn.next { right: 10px; }
+
+        .booking-section { background: white; padding: 1rem 1.5rem; text-align: center; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+        .booking-content h1 { display: none; font-size: 2.2rem; margin-bottom: 1rem; font-weight: 700; color: #2c8577; }
+        .booking-content .tagline { font-size: 1.1rem; margin-bottom: 0.8rem; color: #666; font-style: italic; line-height: 1.2; }
+        
+        .btn { display: inline-block; padding: 0.9rem 1.8rem; background: #2c8577; color: white; text-decoration: none; border-radius: 40px; font-weight: 600; transition: all 0.3s ease; border: none; cursor: pointer; font-size: 0.95rem; margin: 0.2rem; will-change: transform; text-align: center; }
+        .btn:hover { background: #245a4f; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(44, 133, 119, 0.3); }
+        .btn:disabled { background: #a5c3be; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background: #2c8577; color: white; }
+        .btn-secondary { background: #e8f5f3; color: #2c8577; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-booking-main { padding: 0.6rem 1.2rem; font-size: 0.95rem; margin-bottom: 0.2rem; }
+        
+        .booking-content .phone-number { margin-top: 0.6rem; font-size: 1.05rem; color: #2c8577; font-weight: 600; }
+        .section-title { text-align: center; font-size: 1.8rem; color: #2c8577; margin-bottom: 1.5rem; font-weight: 700; }
+        .view-all-btn { background: #2c8577; color: white; padding: 0.6rem 1.2rem; border-radius: 20px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: block; width: fit-content; margin: 1rem auto; font-size: 0.9rem; border: none; }
+
+        /* ================================
+           PREVIEW & FULL LISTS 
+           ================================ */
+        .doctors-preview, .services-preview, .products-preview { margin-bottom: 3rem; }
+        
+        .doctors-preview-container, .services-preview-container, .products-preview-container { display: flex; overflow-x: auto; gap: 1rem; padding: 0.5rem 1rem; scrollbar-width: none; }
+        .doctors-preview-container::-webkit-scrollbar, .services-preview-container::-webkit-scrollbar, .products-preview-container::-webkit-scrollbar { display: none; }
+        
+        .doctor-preview-card { width: 140px; flex-shrink: 0; background: white; border-radius: 20px; padding: 1rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); cursor: pointer; text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
+        .doctor-preview-card:hover { transform: translateY(-3px); }
+        .doctor-preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%); margin: 0 auto 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #2c8577; }
+        .doctor-preview-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .doctor-preview-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+        .doctor-preview-qualification { color: #666; font-size: 0.8rem; }
+        
+        .service-preview-card, .product-preview-card { width: 260px; flex-shrink: 0; background: white; border-radius: 15px; padding: 1.5rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); transition: transform 0.3s ease; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+        .product-profile-photo { width: 100%; height: 140px; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
+        .product-profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .product-no-photo { background: linear-gradient(135deg, #e8f5f3 0%, #d1f2eb 100%); font-size: 3rem; color:#2c8577; }
+        .product-preview-price { color: #2c8577; font-weight: 700; font-size: 1.2rem; margin-bottom: 1rem; }
+        
+        .doctors-container, .services-container, .products-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem; }
+        .doctor-card, .service-card, .product-card { background: white; border-radius: 18px; padding: 1.8rem; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+        .doctor-avatar { width: 120px; height: 120px; border-radius: 50%; background: #e8f5f3; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+        .doctor-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .doctor-name { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+        /* ================================
+           DETAIL PAGES & MODALS
+           ================================ */
+        .detail-page-content { background: white; border-radius: 18px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; }
+        .product-view-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .main-product-image { width: 100%; height: 350px; border-radius: 12px; overflow: hidden; background: #f8f9fa; display: flex; align-items: center; justify-content: center; }
+        .main-product-image img { width: 100%; height: 100%; object-fit: cover; }
+        .service-detail-banner { width: 100%; height: 250px; border-radius: 12px; object-fit: cover; margin-bottom: 1.5rem; background: #e8f5f3; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); overflow-y: auto; padding: 1rem; }
+        .modal-content { background-color: white; margin: auto; padding: 2rem; border-radius: 15px; width: 100%; max-width: 500px; position: relative; top: 50%; transform: translateY(-50%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; right: 1.5rem; top: 1rem; }
+        .close:hover { color: #2c8577; }
+        #toastNotification { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem; transition: visibility 0s, opacity 0.3s linear; opacity: 0; }
+        #toastNotification.show { visibility: visible; opacity: 1; }
+        #toastNotification.error { background-color: #dc3545; }
+
+        .form-group, .form-row { margin-bottom: 1rem; }
+        .form-field { display: flex; flex-direction: column; }
+        .form-field label, .form-group label { margin-bottom: 0.5rem; font-weight: 600; color: #495057; display: block;}
+        .form-field input[type="text"], .form-field input[type="tel"], .form-field input[type="email"], .form-field input[type="password"], .form-field textarea, .form-group input[type="text"], .form-group input[type="password"] { width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 8px; font-size: 1rem; }
+        .form-field input:focus, .form-group input:focus { outline: none; border-color: #2c8577; }
+        .form-row.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .btn-google { background-color: #fff; color: #3c4043; border: 1px solid #dadce0; border-radius: 8px; padding: 0.75rem 1rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; cursor: pointer; transition: background-color 0.2s, box-shadow 0.2s; font-size: 1rem; margin-top: 1rem; }
+
+        /* Admin Styles */
+        .admin-dashboard { display: none; background: #f8f9fa; min-height: 100vh; padding-bottom: 2rem; }
+        .admin-dashboard.active { display: block; }
+        .admin-header { background: white; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .admin-tabs { display: flex; overflow-x: auto; background: white; border-bottom: 1px solid #dee2e6; margin-bottom: 1rem; }
+        .admin-tab { padding: 1rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 1rem; color: #495057; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .admin-tab.active { color: #2c8577; border-bottom-color: #2c8577; font-weight: 600; }
+        .admin-content { max-width: 900px; margin: 0 auto; padding: 0 1rem; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ================================
+           PRINT STYLES FOR PATIENT PORTAL
+           ================================ */
+        @media print {
+            body * { visibility: hidden; }
+            #reportsPage, #reportsPage * { visibility: visible; }
+            #reportsPage { position: absolute; left: 0; top: 0; width: 100%; }
+            .header, .back-btn, #patientPrescriptionView button { display: none !important; }
+            #prescriptionContent { border: none !important; padding: 0 !important; font-size: 14pt; }
+        }
+
+        .rendered-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; margin-top: 0.5rem; }
+        .rendered-table th, .rendered-table td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+        .rendered-table th { background-color: #e8f5f3; color: #2c8577; }
+
+        @media (max-width: 768px) {
+            .hero-container { aspect-ratio: 16/9; border-radius: 0; }
+            .product-view-layout { grid-template-columns: 1fr; gap: 1rem; }
+            .detail-page-content { padding: 1.5rem; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-        <p>Loading...</p>
-    </div>
+    <div id="toastNotification"></div>
 
-    <!-- Header -->
     <header class="header" id="header">
-        <div class="logo">
-            <img src="https://via.placeholder.com/32x32/2c8577/ffffff?text=LOGO" alt="Logo" class="logo-img" id="clinicLogo" loading="lazy">
-            <span id="clinicName">Physio - The Therapeutic Moves</span>
+        <a href="#/home" class="logo">
+            <img src="https://via.placeholder.com/40x40/2c8577/ffffff?text=PT" alt="Logo" class="logo-img" id="clinicLogo" loading="lazy">
+            <span id="clinicName">Physio Clinic</span>
+        </a>
+        <div class="search-container">
+            <input type="text" id="globalSearch" class="search-input" placeholder="Search..." oninput="window.handleSearch()">
         </div>
-        <div class="hamburger" onclick="toggleMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="hamburger" onclick="window.toggleMenu()">
+            <span></span><span></span><span></span>
         </div>
     </header>
 
-    <!-- Mobile Menu -->
+    <div id="searchResults" class="search-results"></div>
+
     <div class="mobile-menu" id="mobileMenu">
-        <button class="close-menu" onclick="toggleMenu()">&times;</button>
+        <button class="close-menu" onclick="window.toggleMenu()">&times;</button>
         <ul>
-            <li onclick="showPage('home')">Home</li>
-            <li onclick="showPage('doctors')">Doctors</li>
-            <li onclick="showPage('services')">Services</li>
-            <li onclick="showPage('products')">Products</li>
-            <li onclick="showAdminLogin()">Admin Login</li>
+            <li><a href="#/home" onclick="window.toggleMenu()">Home</a></li>
+            <li><a href="#/doctors" onclick="window.toggleMenu()">Doctors</a></li>
+            <li><a href="#/services" onclick="window.toggleMenu()">Services</a></li>
+            <li><a href="#/products" onclick="window.toggleMenu()">Products</a></li>
+            <li><a href="#/reports" onclick="window.toggleMenu()">Prescription/Reports</a></li>
+            <li class="admin-link"><a onclick="window.showAdminLogin(); window.toggleMenu();">Doctor Login</a></li>
         </ul>
     </div>
+    <div class="overlay" id="overlay" onclick="window.toggleMenu()"></div>
 
-    <!-- Overlay -->
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-    <!-- Main Content -->
-    <main class="main">
-        <!-- Home Page -->
+    <main class="main" id="mainContent">
+        <!-- HOME PAGE -->
         <div class="page active" id="homePage">
-            <!-- Hero Banner (2:1 Aspect Ratio) -->
-            <section class="hero" id="heroSection"></section>
-
-            <!-- Booking Section -->
+            <div class="hero-container" id="heroSection"></div>
             <section class="booking-section">
                 <div class="booking-content">
                     <h1 id="heroTitle">Therapeutic Moves</h1>
                     <p class="tagline" id="heroTagline">"We add life in your days."</p>
-                    <button class="btn" onclick="bookAppointment()">Book Appointment</button>
+                    <button class="btn btn-primary btn-booking-main" onclick="window.bookAppointment()">Book Appointment</button>
                     <div class="phone-number" id="phoneNumber">📞 +91 9641568109</div>
                 </div>
             </section>
-
-            <!-- Doctors Preview Section -->
+            
             <section class="doctors-preview">
                 <h2 class="section-title">Our Expert Team</h2>
                 <div class="doctors-preview-container" id="doctorsPreview">
-                    <div class="skeleton-loader" id="doctorsSkeleton">
-                        <div class="skeleton-card"></div>
-                        <div class="skeleton-card"></div>
-                        <div class="skeleton-card"></div>
-                    </div>
+                    <div class="skeleton-loader" id="doctorsSkeleton"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
                 </div>
-                <a href="#" class="view-all-btn" onclick="showPage('doctors')">View All Doctors</a>
+                <a href="#/doctors" class="view-all-btn">View All Doctors</a>
             </section>
-
-            <!-- Services Preview Section -->
+            
             <section class="services-preview">
                 <h2 class="section-title">Our Services</h2>
-                <div class="services-preview-grid" id="servicesPreview">
-                    <div class="skeleton-loader services-skeleton" id="servicesSkeleton">
-                        <div class="skeleton-service-card"></div>
-                        <div class="skeleton-service-card"></div>
-                        <div class="skeleton-service-card"></div>
-                    </div>
+                <div class="services-preview-container" id="servicesPreview">
+                    <div class="skeleton-loader services-skeleton" id="servicesSkeleton"><div class="skeleton-service-card"></div><div class="skeleton-service-card"></div></div>
                 </div>
-                <a href="#" class="view-all-btn" onclick="showPage('services')">View All Services</a>
-            </section>
-
-            <!-- Products Preview Section -->
-            <section class="products-preview">
-                <h2 class="section-title">Our Products</h2>
-                <div class="products-preview-grid" id="productsPreview">
-                    <div class="skeleton-loader products-skeleton" id="productsSkeleton">
-                        <div class="skeleton-product-card"></div>
-                        <div class="skeleton-product-card"></div>
-                        <div class="skeleton-product-card"></div>
-                    </div>
-                </div>
-                <a href="#" class="view-all-btn" onclick="showPage('products')">View All Products</a>
+                <a href="#/services" class="view-all-btn">View All Services</a>
             </section>
         </div>
 
-        <!-- Doctors Page -->
+        <!-- LIST PAGES -->
         <div class="page" id="doctorsPage">
-            <button class="back-btn" onclick="showPage('home')">← Back</button>
-            <div class="page-header">
-                <h1 class="page-title">Our Doctors</h1>
-            </div>
+            <a href="#/home" class="back-btn">← Back to Home</a>
+            <div class="page-header"><h1 class="page-title">Our Doctors</h1></div>
             <div class="doctors-container" id="doctorsContainer"></div>
         </div>
-
-        <!-- Services Page -->
         <div class="page" id="servicesPage">
-            <button class="back-btn" onclick="showPage('home')">← Back</button>
-            <div class="page-header">
-                <h1 class="page-title">Our Services</h1>
-            </div>
+            <a href="#/home" class="back-btn">← Back to Home</a>
+            <div class="page-header"><h1 class="page-title">Our Services</h1></div>
             <div class="services-container" id="servicesContainer"></div>
         </div>
-
-        <!-- Products Page -->
         <div class="page" id="productsPage">
-            <button class="back-btn" onclick="showPage('home')">← Back</button>
-            <div class="page-header">
-                <h1 class="page-title">Our Products</h1>
-            </div>
+            <a href="#/home" class="back-btn">← Back to Home</a>
+            <div class="page-header"><h1 class="page-title">Our Products</h1></div>
             <div class="products-container" id="productsContainer"></div>
         </div>
+
+        <!-- PATIENT PORTAL PAGE -->
+        <div class="page" id="reportsPage">
+            <a href="#/home" class="back-btn">← Back to Home</a>
+            <div class="detail-page-content" style="max-width: 600px; margin: 0 auto; text-align: center;">
+                <h1 class="page-title">Patient Portal</h1>
+                
+                <!-- Login Form -->
+                <div id="patientLoginSection">
+                    <p style="color: #666; margin-bottom: 1.5rem;">Log in to view and print your latest prescriptions.</p>
+                    <div class="form-group" style="text-align: left;">
+                        <label>Patient UPID</label>
+                        <input type="text" id="patientLoginUpid" placeholder="e.g. 1234">
+                    </div>
+                    <div class="form-group" style="text-align: left;">
+                        <label>Last 4 Digits of Mobile No.</label>
+                        <input type="password" id="patientLoginMobile" placeholder="e.g. 8109" maxlength="4">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-top: 1rem;" onclick="window.patientLogin()">View Prescription</button>
+                    
+                    <div style="margin-top: 2.5rem; border-top: 1px solid #eee; padding-top: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">Are you a Doctor?</p>
+                        <button class="btn btn-secondary btn-buy-small" onclick="window.showAdminLogin()">Doctor Login</button>
+                    </div>
+                </div>
+
+                <!-- Prescription View -->
+                <div id="patientPrescriptionView" style="display: none; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="color: #2c8577;">Your Prescription</h2>
+                        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+                    </div>
+                    <div id="prescriptionContent" style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #dee2e6; min-height: 300px; color: #333; font-family: sans-serif;">
+                        <!-- Data injected here -->
+                    </div>
+                    <button class="btn btn-danger" style="width: 100%; margin-top: 1.5rem;" onclick="window.patientLogout()">Log Out</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- Product View Modal (Internal) -->
-    <div id="productViewModal" class="product-view-modal">
-        <div class="product-view-content">
-            <span class="close" onclick="closeProductView()">&times;</span>
-            <div class="product-view-layout">
-                <!-- Product Images Gallery -->
-                <div class="product-images-section">
-                    <div class="main-product-image" id="mainProductImage"></div>
-                    <div class="product-image-thumbnails" id="productImageThumbnails"></div>
+    <!-- ADMIN MODAL -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close" onclick="window.closeAdminModal()">&times;</span>
+            <h2 style="color: #2c8577; margin-bottom: 1.5rem; text-align:center;">Admin Login</h2>
+            <form id="adminLoginForm">
+                <div class="form-group"><label>Email</label><input type="email" id="adminEmailInput" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="adminPassword" required></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top:0.5rem;">Login with Email</button>
+            </form>
+            <div style="display: flex; align-items: center; margin: 1.5rem 0; color: #999;">
+                <hr style="flex-grow: 1; border: none; border-top: 1px solid #eee;"><span style="padding: 0 10px; font-size: 0.9rem;">OR</span><hr style="flex-grow: 1; border: none; border-top: 1px solid #eee;">
+            </div>
+            <button type="button" class="btn-google" onclick="window.loginWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo"> Sign in with Google
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Core & Realtime Database (For Main Website Content)
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getDatabase, ref, update, set, onValue } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
+        
+        // Firebase Auth & Firestore (For Patient Prescriptions from Tracker)
+        import { getAuth, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            firebaseConfig = {
+              apiKey: "AIzaSyCPhZY9CrsXJHIr5nBPaGPNVHsc70yfVus",
+              authDomain: "patient-records-arpan.firebaseapp.com",
+              databaseURL: "https://patient-records-arpan-default-rtdb.firebaseio.com",
+              projectId: "patient-records-arpan",
+              storageBucket: "patient-records-arpan.firebasestorage.app",
+              messagingSenderId: "599041105903",
+              appId: "1:599041105903:web:7f0c1c10f38f12cc2ee01a"
+            };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'github-physio-app';
+
+        window.siteData = { hero: {}, doctors: [], services: [], products: [] };
+        
+        // --- AUTH SETUP (CRITICAL FOR FIRESTORE) ---
+        let currentUser = null;
+        onAuthStateChanged(auth, (user) => { currentUser = user; });
+        
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
+            } else {
+                try { await signInAnonymously(auth); } catch(e) {}
+            }
+        };
+        initAuth();
+
+        window.slugify = function(text) { return text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-'); }
+
+        // --- ROUTING SYSTEM ---
+        window.handleRoute = function() {
+            const hash = window.location.hash || '#/home';
+            const parts = hash.split('/');
+            const route = parts[1]; 
+
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+
+            if (route === 'home' || !route) document.getElementById('homePage').classList.add('active');
+            else if (route === 'doctors') document.getElementById('doctorsPage').classList.add('active');
+            else if (route === 'services') document.getElementById('servicesPage').classList.add('active');
+            else if (route === 'products') document.getElementById('productsPage').classList.add('active');
+            else if (route === 'reports') document.getElementById('reportsPage').classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        window.addEventListener('hashchange', window.handleRoute);
+
+        // --- LOAD SITE DATA ---
+        onValue(ref(database, 'site'), (snapshot) => {
+            if (snapshot.exists()) window.siteData = { ...window.siteData, ...snapshot.val() };
+            renderSite(); hideSkeletons(); window.handleRoute();
+        }, (err) => { hideSkeletons(); });
+
+        // --- PATIENT PORTAL LOGIC ---
+        window.patientLogin = async function() {
+            const upid = document.getElementById('patientLoginUpid').value.trim();
+            const mobileSuffix = document.getElementById('patientLoginMobile').value.trim();
+
+            if (!upid || mobileSuffix.length !== 4) {
+                window.showToast('Please enter your UPID and the last 4 digits of your mobile number.', 'error');
+                return;
+            }
+
+            if (!currentUser) {
+                window.showToast('Connecting securely to database...', 'error');
+                return;
+            }
+
+            window.showToast('Searching for Prescription...', 'success');
+            
+            try {
+                // Fetch the published document matching the UPID
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'prescriptions', upid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Verify Mobile
+                    const contact = data.contact || '';
+                    const strippedContact = contact.replace(/\D/g, '');
+                    
+                    if (strippedContact.endsWith(mobileSuffix)) {
+                        // Show Portal
+                        document.getElementById('patientLoginSection').style.display = 'none';
+                        document.getElementById('patientPrescriptionView').style.display = 'block';
+                        renderPrescriptionUI(data);
+                    } else {
+                        window.showToast('Mobile number verification failed.', 'error');
+                    }
+                } else {
+                    window.showToast('No published prescription found for this UPID.', 'error');
+                }
+            } catch (error) {
+                window.showToast('Error fetching data. Please try again.', 'error');
+                console.error(error);
+            }
+        };
+
+        window.patientLogout = function() {
+            document.getElementById('patientLoginUpid').value = '';
+            document.getElementById('patientLoginMobile').value = '';
+            document.getElementById('patientLoginSection').style.display = 'block';
+            document.getElementById('patientPrescriptionView').style.display = 'none';
+            document.getElementById('prescriptionContent').innerHTML = '';
+            window.showToast('Logged out successfully.');
+        };
+
+        function renderPrescriptionUI(data) {
+            let html = `
+                <div style="text-align:center; margin-bottom:1.5rem; border-bottom:2px solid #2c8577; padding-bottom:1rem;">
+                    <h2 style="color:#2c8577; margin:0; font-size:24px;">Dr. Arpan Das (PT)</h2>
+                    <p style="margin:0; font-size:14px; color:#666;">BPT | Consultant Physiotherapist</p>
+                    <p style="margin:0; font-size:14px; font-weight:bold; color:#2c8577; margin-top:5px;">Date: ${data.date ? new Date(data.date).toLocaleDateString() : new Date().toLocaleDateString()}</p>
                 </div>
                 
-                <!-- Product Information -->
-                <div class="product-info-section">
-                    <h2 id="productViewName"></h2>
-                    <div class="product-view-price" id="productViewPrice"></div>
-                    <div class="product-view-description" id="productViewDescription"></div>
-                    <div class="product-view-actions">
-                        <button class="btn btn-primary btn-large" id="productViewBuyBtn">
-                            🛒 Buy Now on WhatsApp
-                        </button>
-                    </div>
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:1.5rem; background:#f0f7f6; padding:10px; border-radius:8px;">
+                    <div><strong>Patient:</strong> ${data.name || 'N/A'}</div>
+                    <div><strong>Age/Gender:</strong> ${data.age || '-'}/${data.gender || '-'}</div>
+                    <div><strong>UPID:</strong> ${data.ipId}</div>
                 </div>
-            </div>
-        </div>
-    </div>
+            `;
 
-    <!-- Doctor Details Modal -->
-    <div id="doctorDetailsModal" class="doctor-details">
-        <div class="doctor-details-content">
-            <span class="close" onclick="closeDoctorDetails()">&times;</span>
-            <div class="doctor-avatar" id="modalDoctorAvatar">👨‍⚕️</div>
-            <h2 id="modalDoctorName" style="color: #2c8577; margin-bottom: 0.5rem;"></h2>
-            <p id="modalDoctorQualification" style="color: #666; margin-bottom: 0.5rem;"></p>
-            <p id="modalDoctorFees" style="color: #2c8577; font-weight: 600; font-size: 1.2rem; margin-bottom: 1rem;"></p>
-            <p id="modalDoctorDetails" style="color: #666; margin-bottom: 1.5rem;"></p>
-            <button class="btn btn-primary" id="modalBookingBtn">Book Appointment</button>
-        </div>
-    </div>
+            if (data.diagnosis) {
+                html += `<div style="margin-bottom:1.5rem;"><h3 style="color:#2c8577; border-bottom:1px solid #eee; padding-bottom:5px;">Diagnosis</h3><p style="font-size:18px; font-weight:bold;">${data.diagnosis}</p></div>`;
+            }
 
-    <!-- Admin Login Modal -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAdminModal()">&times;</span>
-            <h2 style="color: #2c8577; margin-bottom: 1rem;">Admin Login</h2>
-            <form id="adminLoginForm">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-            </form>
-        </div>
-    </div>
+            if (data.chiefComplaints) {
+                html += `<div style="margin-bottom:1.5rem;"><h3 style="color:#2c8577; border-bottom:1px solid #eee; padding-bottom:5px;">Chief Complaints</h3><p style="white-space:pre-wrap;">${data.chiefComplaints}</p></div>`;
+            }
 
-    <!-- Service Details Modal -->
-    <div id="serviceDetailsModal" class="service-details">
-        <div class="service-details-content">
-            <span class="close" onclick="closeServiceDetails()">&times;</span>
-            <h2 id="serviceDetailsTitle" style="color: #2c8577; margin-bottom: 1rem;"></h2>
-            <div id="serviceDetailsContent"></div>
-        </div>
-    </div>
+            if (data.treatmentNote) {
+                html += `<div style="margin-bottom:1.5rem;"><h3 style="color:#2c8577; border-bottom:1px solid #eee; padding-bottom:5px;">Treatment Plan & Advice</h3><p style="white-space:pre-wrap;">${data.treatmentNote}</p></div>`;
+            }
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="edit-modal">
-        <div class="edit-modal-content">
-            <span class="close" onclick="closeEditModal()">&times;</span>
-            <h3 id="editModalTitle">Edit Item</h3>
-            <div id="editModalContent"></div>
-        </div>
-    </div>
+            // Render Custom Tables (Treatment Section generally)
+            if (data.customTables && Array.isArray(data.customTables)) {
+                const tables = data.customTables.filter(t => t.section === 'treatment' || t.section === 'assessment');
+                tables.forEach(table => {
+                    if (table.title) html += `<h4 style="margin-top:1rem; color:#444;">${table.title}</h4>`;
+                    html += `<table class="rendered-table"><thead><tr>`;
+                    table.headers.forEach(h => html += `<th>${h}</th>`);
+                    html += `</tr></thead><tbody>`;
+                    
+                    let rows = table.rows;
+                    if (typeof rows === 'string') { try { rows = JSON.parse(rows); } catch(e) { rows = []; } }
+                    
+                    rows.forEach(r => {
+                        html += `<tr>`;
+                        r.forEach(cell => html += `<td>${cell}</td>`);
+                        html += `</tr>`;
+                    });
+                    html += `</tbody></table>`;
+                });
+            }
 
-    <!-- Sub-Services Management Modal -->
-    <div id="subServicesModal" class="sub-services-modal">
-        <div class="sub-services-content">
-            <span class="close" onclick="closeSubServicesModal()">&times;</span>
-            <h3 id="subServicesTitle">Manage Sub-Services</h3>
-            <div class="sub-services-list" id="subServicesList"></div>
-            <div class="add-sub-service">
-                <h4>Add New Sub-Service</h4>
-                <div class="form-row two-col">
-                    <div class="form-field">
-                        <label>Test/Treatment Name</label>
-                        <input type="text" id="newSubServiceName" placeholder="Enter test name">
-                    </div>
-                    <div class="form-field">
-                        <label>Price</label>
-                        <input type="text" id="newSubServicePrice" placeholder="₹000">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="addSubService()">Add Sub-Service</button>
-            </div>
-        </div>
-    </div>
+            html += `<div style="margin-top:3rem; text-align:right; font-style:italic; color:#666; border-top:1px solid #eee; padding-top:1rem;">Doctor's Signature</div>`;
 
-    <!-- Admin Dashboard -->
-    <div class="admin-dashboard" id="adminDashboard">
-        <header class="admin-header">
-            <h2>Admin Dashboard</h2>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </header>
+            document.getElementById('prescriptionContent').innerHTML = html;
+        }
 
-        <nav class="admin-tabs">
-            <button class="admin-tab active" data-tab="clinic">Clinic Info</button>
-            <button class="admin-tab" data-tab="doctors">Doctors</button>
-            <button class="admin-tab" data-tab="services">Services</button>
-            <button class="admin-tab" data-tab="products">Products</button>
-        </nav>
+        // --- UTILS & RENDERING ---
+        window.showToast = function(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.className = type === 'error' ? 'error show' : 'show';
+            setTimeout(() => toast.classList.remove('show', 'error'), 4000);
+        }
+        function hideSkeletons() { ['doctorsSkeleton', 'servicesSkeleton'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); }); }
+        window.toggleMenu = function() { document.getElementById('mobileMenu').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+        
+        function renderSite() {
+            if (window.siteData.hero) {
+                document.getElementById('clinicName').textContent = window.siteData.hero.clinicName || 'Physio Clinic';
+                document.getElementById('heroTitle').textContent = window.siteData.hero.title || 'Therapeutic Moves';
+                document.getElementById('phoneNumber').innerHTML = `📞 ${window.siteData.hero.phone || '+91 9641568109'}`;
+            }
+        }
+        
+        // ADMIN LOGIN (Doctor)
+        window.showAdminLogin = function() { document.getElementById('adminModal').style.display = 'block'; }
+        window.closeAdminModal = () => document.getElementById('adminModal').style.display = 'none';
 
-        <div class="admin-content">
-            <!-- Clinic Info Panel -->
-            <div class="tab-panel active" id="clinic-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalDoctors">3</div>
-                        <div class="stat-label">Total Doctors</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalServices">3</div>
-                        <div class="stat-label">Total Services</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalProducts">3</div>
-                        <div class="stat-label">Total Products</div>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h3>Clinic Information</h3>
-                    <div class="form-row two-col">
-                        <div class="form-field">
-                            <label>Clinic Name</label>
-                            <input type="text" id="adminClinicName" placeholder="Enter clinic name">
-                        </div>
-                        <div class="form-field">
-                            <label>Phone</label>
-                            <input type="tel" id="adminPhone" placeholder="Enter phone number">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label>Tagline</label>
-                            <input type="text" id="adminTagline" placeholder="Enter tagline">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label>Email</label>
-                            <input type="email" id="adminEmail" placeholder="Enter email address">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label>Logo URL (imgbb, etc.)</label>
-                            <input type="url" id="adminLogoUrl" placeholder="https://i.ibb.co/..." oninput="previewImage(this, 'logoPreview')">
-                            <img id="logoPreview" class="image-preview" style="display: none;">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label>Hero Banner Image URL (imgbb, etc.)</label>
-                            <input type="url" id="bannerImageUrl" placeholder="https://i.ibb.co/..." oninput="previewImage(this, 'bannerPreview')">
-                            <img id="bannerPreview" class="image-preview" style="display: none;">
-                        </div>
-                    </div>
-                    <button class="update-btn" onclick="updateClinicInfo()">Update Clinic Info</button>
-                </div>
-            </div>
-
-            <!-- Doctors Panel -->
-            <div class="tab-panel" id="doctors-panel">
-                <button class="add-btn" onclick="addNewDoctor()">Add New Doctor</button>
-                <div class="item-list" id="doctorsAdminList"></div>
-            </div>
-
-            <!-- Services Panel -->
-            <div class="tab-panel" id="services-panel">
-                <button class="add-btn" onclick="addNewService()">Add New Service</button>
-                <div class="item-list" id="servicesAdminList"></div>
-            </div>
-
-            <!-- Products Panel -->
-            <div class="tab-panel" id="products-panel">
-                <button class="add-btn" onclick="addNewProduct()">Add New Product</button>
-                <div class="item-list" id="productsAdminList"></div>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="app.js"></script>
+    </script>
 </body>
 </html>
