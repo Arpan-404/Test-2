@@ -74,7 +74,7 @@
         // --- FIREBASE IMPORTS ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const generateId = () => {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -183,6 +183,7 @@
           
           const [user, setUser] = useState(null);
           const [isConnecting, setIsConnecting] = useState(true);
+          const [isCheckingSession, setIsCheckingSession] = useState(true);
           const [loginError, setLoginError] = useState("");
 
           // Patient Login Form State
@@ -208,7 +209,47 @@
             return () => unsubscribe();
           }, []);
 
-          // Fetch ALL patients globally (filtered in memory for doctors/patients to adhere to complex query rules)
+          // Auto Login / Session Restoration
+          useEffect(() => {
+              if (!user) {
+                  if (!isConnecting) setIsCheckingSession(false);
+                  return;
+              }
+
+              const checkLoginState = async () => {
+                  // Check if Doctor (Google login)
+                  const isGoogleUser = user.providerData.some(p => p.providerId === 'google.com');
+                  if (isGoogleUser) {
+                      setAuthRole('doctor');
+                      setViewMode('home');
+                      setIsCheckingSession(false);
+                      return;
+                  }
+
+                  // Check if Patient (via Firestore preference for Anonymous user)
+                  try {
+                      const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'loginState');
+                      const docSnap = await getDoc(prefRef);
+                      if (docSnap.exists()) {
+                          const data = docSnap.data();
+                          if (data.role === 'patient' && data.patientId) {
+                              setAuthRole('patient');
+                              setActivePatientId(data.patientId);
+                              setViewMode('patient');
+                              setIsCheckingSession(false);
+                              return;
+                          }
+                      }
+                  } catch (e) { console.error("Failed to restore session:", e); }
+                  
+                  setViewMode('login_selection');
+                  setIsCheckingSession(false);
+              };
+
+              checkLoginState();
+          }, [user, isConnecting]);
+
+          // Fetch ALL patients globally (filtered in memory for doctors/patients)
           useEffect(() => {
             if (!user) return;
             const patientsRef = collection(db, 'artifacts', appId, 'public', 'data', 'patients');
@@ -233,13 +274,13 @@
           const handleDoctorGoogleLogin = async () => {
               setLoginError("");
               try { 
+                  // Triggering signInWithPopup will automatically fire onAuthStateChanged
+                  // which will then run our checkLoginState hook and log the doctor in.
                   await signInWithPopup(auth, googleProvider); 
-                  setAuthRole('doctor');
-                  setViewMode('home');
               } catch (error) { setLoginError("Doctor login failed. Check popup blockers."); }
           };
 
-          const handlePatientLoginSubmit = (e) => {
+          const handlePatientLoginSubmit = async (e) => {
               e.preventDefault();
               setLoginError("");
               const match = allPatients.find(p => 
@@ -252,18 +293,44 @@
                   setAuthRole('patient');
                   setActivePatientId(match.id);
                   setViewMode('patient');
+
+                  // Save the session to Firestore
+                  if (user) {
+                      try {
+                          const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'loginState');
+                          await setDoc(prefRef, { role: 'patient', patientId: match.id });
+                      } catch(e) { console.error("Failed to save patient session"); }
+                  }
               } else {
                   setLoginError("Prescription not found. Please check your UPID/Name and Mobile Number.");
               }
           };
 
           const handleLogout = async () => {
+              setIsCheckingSession(true);
+              
+              // Clear saved session from Firestore
+              if (user) {
+                  try {
+                      const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'loginState');
+                      await setDoc(prefRef, { role: null, patientId: null });
+                  } catch(e){}
+              }
+
               setAuthRole(null);
               setActivePatientId(null);
               setViewMode('login_selection');
               setPatientLoginId("");
               setPatientLoginPhone("");
-              try { await signOut(auth); await signInAnonymously(auth); } catch (error) {}
+              
+              try { 
+                  await signOut(auth); 
+                  if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                      await signInWithCustomToken(auth, __initial_auth_token);
+                  } else {
+                      await signInAnonymously(auth);
+                  }
+              } catch (error) {}
           };
 
           const handleCreatePatient = () => {
@@ -303,7 +370,7 @@
           const doctorPatients = allPatients.filter(p => p.doctorId === user?.uid);
           const activePatient = allPatients.find(p => p.id === activePatientId) || { id: activePatientId };
 
-          if (isConnecting) return (
+          if (isConnecting || isCheckingSession) return (
                <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-blue-600">
                   <i className="ph-bold ph-spinner-gap text-4xl animate-spin"></i><p className="font-semibold tracking-wide">Loading PhysioCare...</p>
                </div>
@@ -953,3 +1020,4 @@
     </script>
 </body>
 </html>
+
