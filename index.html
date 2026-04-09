@@ -71,20 +71,23 @@
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useRef } = React;
 
-        // --- FIREBASE IMPORTS ---
+        // --- FIREBASE IMPORTS (Using CDN URLs for browser-native ESM) ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         const generateId = () => {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
             return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         };
 
+        // --- FIREBASE CONFIGURATION ---
         let firebaseConfig;
         if (typeof __firebase_config !== 'undefined') {
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
+            // Your exact web app's Firebase configuration
             firebaseConfig = {
               apiKey: "AIzaSyCPhZY9CrsXJHIr5nBPaGPNVHsc70yfVus",
               authDomain: "patient-records-arpan.firebaseapp.com",
@@ -96,11 +99,21 @@
             };
         }
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Initialize Analytics (wrapped in try-catch in case browser ad-blockers block the analytics script)
+        let analytics;
+        try {
+            analytics = getAnalytics(app);
+        } catch (e) {
+            console.log("Analytics blocked or unavailable.");
+        }
+
         const googleProvider = new GoogleAuthProvider();
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'github-physio-app';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'physiocare-tracker';
 
         // --- Joint Data ---
         const JOINTS_DATA = {
@@ -174,9 +187,9 @@
 
         function App() {
           const [allPatients, setAllPatients] = useState([]);
-          const [draftPatient, setDraftPatient] = useState(null); // Holds unsaved newly created patient
-          const [viewMode, setViewMode] = useState('login_selection'); // login_selection, patient_login_form, home, patient
-          const [authRole, setAuthRole] = useState(null); // 'doctor' | 'patient' | null
+          const [draftPatient, setDraftPatient] = useState(null); 
+          const [viewMode, setViewMode] = useState('login_selection'); 
+          const [authRole, setAuthRole] = useState(null); 
           
           const [activePatientId, setActivePatientId] = useState(null);
           const [searchQuery, setSearchQuery] = useState('');
@@ -187,7 +200,6 @@
           const [isCheckingSession, setIsCheckingSession] = useState(true);
           const [loginError, setLoginError] = useState("");
 
-          // Patient Login Form State
           const [patientLoginId, setPatientLoginId] = useState("");
           const [patientLoginPhone, setPatientLoginPhone] = useState("");
 
@@ -218,7 +230,6 @@
               }
 
               const checkLoginState = async () => {
-                  // Check if Doctor (Google login)
                   const isGoogleUser = user.providerData.some(p => p.providerId === 'google.com');
                   if (isGoogleUser) {
                       setAuthRole('doctor');
@@ -227,7 +238,6 @@
                       return;
                   }
 
-                  // Check if Patient (via Firestore preference for Anonymous user)
                   try {
                       const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'loginState');
                       const docSnap = await getDoc(prefRef);
@@ -250,7 +260,7 @@
               checkLoginState();
           }, [user, isConnecting]);
 
-          // Fetch ALL patients globally (filtered in memory for doctors/patients)
+          // Fetch ALL patients globally
           useEffect(() => {
             if (!user) return;
             const patientsRef = collection(db, 'artifacts', appId, 'public', 'data', 'patients');
@@ -276,7 +286,10 @@
               setLoginError("");
               try { 
                   await signInWithPopup(auth, googleProvider); 
-              } catch (error) { setLoginError("Doctor login failed. Check popup blockers."); }
+              } catch (error) { 
+                  setLoginError("Login failed. Ensure your domain is added to Firebase Authorized Domains."); 
+                  console.error(error);
+              }
           };
 
           const handlePatientLoginSubmit = async (e) => {
@@ -293,7 +306,6 @@
                   setActivePatientId(match.id);
                   setViewMode('patient');
 
-                  // Save the session to Firestore
                   if (user) {
                       try {
                           const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'loginState');
@@ -308,7 +320,6 @@
           const handleLogout = async () => {
               setIsCheckingSession(true);
               
-              // Clear saved session from Firestore
               if (user) {
                   try {
                       const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'loginState');
@@ -335,7 +346,6 @@
 
           const handleCreatePatient = () => {
             let newIpId;
-            // Generate a unique 4-digit UPID
             do {
                 newIpId = Math.floor(1000 + Math.random() * 9000).toString();
             } while (allPatients.some(p => p.ipId === newIpId));
@@ -367,15 +377,15 @@
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'patients', updatedPatient.id);
                 await setDoc(docRef, patientToSave);
                 
-                // Clear the draft state since it's now saved in allPatients
                 setDraftPatient(null);
-            } catch(e) { console.error("Save failed: ", e); }
+            } catch(e) { 
+                console.error("Save failed: ", e);
+                alert("Failed to save to cloud. Ensure Firestore Database rules are configured to allow writes.");
+            }
             setTimeout(() => setIsSaving(false), 500); 
           };
 
           const doctorPatients = allPatients.filter(p => p.doctorId === user?.uid);
-          
-          // Use draft if available (for brand new patients not yet saved), otherwise find in DB
           const activePatient = draftPatient || allPatients.find(p => p.id === activePatientId) || { id: activePatientId };
 
           if (isConnecting || isCheckingSession) return (
@@ -775,7 +785,7 @@
                 </div>
               </div>
 
-              {/* --- 🖨️ PRINT VIEW (Unchanged core print styling, auto-adapts to new structure) --- */}
+              {/* --- 🖨️ PRINT VIEW --- */}
               <div className="hidden print:block bg-white text-[#1e40af] text-[16px] font-sans h-full w-full relative">
                   <div className="flex justify-between items-start pb-2">
                       <div>
