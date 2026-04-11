@@ -45,27 +45,6 @@
         .editable-cell:not([contenteditable="false"]):focus {
             background-color: rgba(239, 246, 255, 0.5); 
         }
-
-        /* =========================================================
-        FIREBASE SECURITY RULES RECOMMENDATION
-        Paste this into your Firebase Firestore Rules console
-        to ensure true security for the Publish/Unpublish feature:
-        =========================================================
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            match /artifacts/{appId}/public/data/patients/{patientId} {
-              // Doctors (Google authenticated) can read/write everything
-              allow read, write: if request.auth != null && request.auth.token.firebase.sign_in_provider == 'google.com';
-              // Patients (Anonymous) can ONLY read if the document isPublished == true
-              allow read: if request.auth != null && resource.data.isPublished == true;
-            }
-            match /{document=**} {
-              allow read, write: if request.auth != null;
-            }
-          }
-        }
-        */
     </style>
 </head>
 <body>
@@ -657,8 +636,6 @@
 
           const addReassessmentTable = () => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: [...prev.reassessmentTables, { id: generateId(), title: 'Reassessment and progression tracking :-', trackedMetrics: [], records: [] }] })); };
           const removeReassessmentTable = (id) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.filter(t => t.id !== id) })); };
-          
-          // CRUCIAL: Changed textContent to innerText to preserve actual line breaks correctly when typed.
           const updateReassessmentTableTitle = (tableId, newTitle) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, title: newTitle } : t) })); };
 
           const addMetricColumn = (tableId, metricObj) => { 
@@ -676,11 +653,8 @@
           const addDateRow = (tableId) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: [...t.records, { id: generateId(), date: new Date().toISOString().split('T')[0], values: {} }] } : t) })); };
           const removeDateRow = (tableId, recordId) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: t.records.filter(r => r.id !== recordId) } : t) })); };
           const updateRecordDate = (tableId, recordId, newDate) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, records: t.records.map(r => r.id === recordId ? { ...r, date: newDate } : r) }; }) })); };
-          
-          // CRUCIAL: Changed textContent to innerText to preserve actual line breaks correctly when typed.
           const updateSimpleCellValue = (tableId, recordId, metricId, value) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, records: t.records.map(rec => { if (rec.id !== recordId) return rec; return { ...rec, values: { ...rec.values, [metricId]: value } }; })}; }) })); };
           
-          // CRUCIAL: Changed textContent to innerText to preserve actual line breaks correctly when typed.
           const updateMultiFieldCellValue = (tableId, recordId, metricId, subField, value) => { 
               if (readOnly) return;
               setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { 
@@ -741,7 +715,6 @@
               if (readOnly) return;
               const newState = !formData.isPublished;
               setFormData(prev => ({ ...prev, isPublished: newState }));
-              // Auto-save when toggling publish state for immediate effect
               onSave({ ...formData, isPublished: newState }); 
           };
 
@@ -927,7 +900,10 @@
                                               <div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-600"><div className="flex-1 py-0.5 text-center border-r border-slate-200 font-bold">R</div><div className="flex-1 py-0.5 text-center font-bold">L</div></div>
                                             )}
                                             {metric.type === 'ROM with VAS' && (
-                                              <div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-500"><div className="flex-1 py-0.5 text-center border-r border-slate-200">VAS</div><div className="flex-1 py-0.5 text-center">ROM</div></div>
+                                              <div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-500"><div className="flex-1 py-0.5 text-center border-r border-slate-200">VAS</div><div className="flex-1 py-0.5 text-center">{metric.romMode === 'Passive' ? 'PROM' : (metric.romMode === 'Active' ? 'AROM' : 'ROM')}</div></div>
+                                            )}
+                                            {metric.type === 'Custom 2-Column' && (
+                                              <div className="flex w-full border-t border-slate-200 text-[10px] bg-slate-100/50 text-slate-500"><div className="flex-1 py-0.5 text-center border-r border-slate-200">{metric.col1}</div><div className="flex-1 py-0.5 text-center">{metric.col2}</div></div>
                                             )}
                                           </th>
                                         );
@@ -958,7 +934,17 @@
                                                <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
                                                   <div className="flex h-full min-h-[32px]">
                                                       <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'vas', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="VAS">{cellValue?.vas || ''}</div></div>
-                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'rom', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="ROM">{cellValue?.rom || ''}</div></div>
+                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'rom', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder={metric.romMode === 'Passive' ? 'PROM' : (metric.romMode === 'Active' ? 'AROM' : 'ROM')}>{cellValue?.rom || ''}</div></div>
+                                                  </div>
+                                               </td>
+                                             );
+                                          }
+                                          if (metric.type === 'Custom 2-Column') {
+                                            return (
+                                               <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
+                                                  <div className="flex h-full min-h-[32px]">
+                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'c1', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.c1 || ''}</div></div>
+                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'c2', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.c2 || ''}</div></div>
                                                   </div>
                                                </td>
                                              );
@@ -1137,7 +1123,8 @@
                                                                 <div className="flex flex-col h-full justify-between">
                                                                     <span className="leading-tight px-1 mb-1.5 pt-1">{metric.title}</span>
                                                                     {metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT') && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">R</div><div className="flex-1 py-1 font-bold">L</div></div> )}
-                                                                    {metric.type === 'ROM with VAS' && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">VAS</div><div className="flex-1 py-1 font-bold">ROM</div></div> )}
+                                                                    {metric.type === 'ROM with VAS' && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">VAS</div><div className="flex-1 py-1 font-bold">{metric.romMode === 'Passive' ? 'PROM' : (metric.romMode === 'Active' ? 'AROM' : 'ROM')}</div></div> )}
+                                                                    {metric.type === 'Custom 2-Column' && ( <div className="flex w-full border-t border-[#1e40af] text-[14px] text-[#1e40af] mt-auto"><div className="flex-1 py-1 border-r border-[#1e40af] font-bold">{metric.col1}</div><div className="flex-1 py-1 font-bold">{metric.col2}</div></div> )}
                                                                 </div>
                                                             </th>
                                                         ))}
@@ -1169,6 +1156,16 @@
                                                                         </td>
                                                                     );
                                                                 }
+                                                                if (metric.type === 'Custom 2-Column') {
+                                                                    return (
+                                                                        <td key={metric.id} className="p-0 border border-[#1e40af] align-top">
+                                                                            <div className="flex h-full min-h-[32px]">
+                                                                                <div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5 whitespace-pre-wrap">{cellValue?.c1 || '-'}</div>
+                                                                                <div className="flex-1 flex items-center justify-center p-1.5 whitespace-pre-wrap">{cellValue?.c2 || '-'}</div>
+                                                                            </div>
+                                                                        </td>
+                                                                    );
+                                                                }
                                                                 return ( 
                                                                     <td key={metric.id} className="p-2 border border-[#1e40af] text-center align-middle whitespace-pre-wrap">{cellValue || '-'}</td> 
                                                                 );
@@ -1193,26 +1190,43 @@
 
         // --- ADD METRIC MODAL ---
         function AddMetricModal({ onClose, onAdd }) {
-          const [type, setType] = useState('ROM'); const [romMode, setRomMode] = useState('Active');
-          const jointsList = Object.keys(JOINTS_DATA); const [selectedJointGroup, setSelectedJointGroup] = useState(jointsList[2]); 
-          const [selectedMovementIdx, setSelectedMovementIdx] = useState(0); const [side, setSide] = useState('R'); const [customName, setCustomName] = useState('');
+          const [type, setType] = useState('ROM'); 
+          const [romMode, setRomMode] = useState('Active');
+          const jointsList = Object.keys(JOINTS_DATA); 
+          const [selectedJointGroup, setSelectedJointGroup] = useState(jointsList[2]); 
+          const [selectedMovementIdx, setSelectedMovementIdx] = useState(0); 
+          const [side, setSide] = useState('R'); 
+          const [customName, setCustomName] = useState('');
+          const [col1Name, setCol1Name] = useState('Col 1');
+          const [col2Name, setCol2Name] = useState('Col 2');
           
           const handleAdd = () => {
             let title = ''; const movement = JOINTS_DATA[selectedJointGroup][selectedMovementIdx];
             let isBilateral = false; let normalVal = '';
+            let c1 = '', c2 = '';
 
-            if (type === 'ROM' || type === 'ROM with VAS') {
-              title += `${romMode} ${selectedJointGroup} ${movement.name}`; normalVal = movement.normal;
-              if (type === 'ROM with VAS' && movement.type === 'bilateral') title += ` (${side})`;
-              else if (type === 'ROM') isBilateral = movement.type === 'bilateral';
+            if (type === 'ROM') {
+              title = `${romMode} ${selectedJointGroup} ${movement.name}`; normalVal = movement.normal;
+              isBilateral = movement.type === 'bilateral';
             } 
+            else if (type === 'ROM with VAS') {
+              title = `${selectedJointGroup} ${movement.name}`; normalVal = movement.normal;
+              if (movement.type === 'bilateral') title += ` (${side})`;
+              isBilateral = false; // it handles its own 2-column layout
+            }
             else if (type === 'MMT') { 
-              title += `${selectedJointGroup} ${movement.name}`; isBilateral = movement.type === 'bilateral'; normalVal = '5/5'; 
+              title = `${selectedJointGroup} ${movement.name}`; isBilateral = movement.type === 'bilateral'; normalVal = '5/5'; 
             } 
             else if (type === 'VAS') { title = customName || 'VAS'; isBilateral = false; normalVal = '0-10'; }
+            else if (type === 'Custom 2-Column') {
+              title = customName || 'Custom Tracker';
+              c1 = col1Name || 'Col 1';
+              c2 = col2Name || 'Col 2';
+              isBilateral = false;
+            }
             else { title = customName || 'Custom Column'; isBilateral = false; normalVal = ''; }
 
-            onAdd({ id: generateId(), type, title, isBilateral, normal: normalVal });
+            onAdd({ id: generateId(), type, title, isBilateral, normal: normalVal, romMode, col1: c1, col2: c2 });
           };
           
           const currentMovements = JOINTS_DATA[selectedJointGroup]; 
@@ -1230,6 +1244,7 @@
                         <option value="MMT">Manual Muscle Test (MMT)</option>
                         <option value="ROM with VAS">ROM + VAS (Single Side)</option>
                         <option value="VAS">VAS (Pain Scale)</option>
+                        <option value="Custom 2-Column">Custom 2-Column Tracking</option>
                         <option value="Other">Other / Treatment</option>
                     </select>
                   </div>
@@ -1257,6 +1272,24 @@
                       )}
                     </>
                   )}
+                  {type === 'Custom 2-Column' && (
+                      <div className="space-y-3">
+                          <div className="space-y-1">
+                              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Main Name</label>
+                              <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Balance / Mobility" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Left Col Name</label>
+                                  <input type="text" value={col1Name} onChange={(e) => setCol1Name(e.target.value)} placeholder="e.g. Test" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500" />
+                              </div>
+                              <div className="space-y-1">
+                                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Right Col Name</label>
+                                  <input type="text" value={col2Name} onChange={(e) => setCol2Name(e.target.value)} placeholder="e.g. Score" className="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500" />
+                              </div>
+                          </div>
+                      </div>
+                  )}
                   {(type === 'Other' || type === 'VAS') && ( 
                       <div className="space-y-1">
                           <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Name</label>
@@ -1275,3 +1308,4 @@
     </script>
 </body>
 </html>
+
