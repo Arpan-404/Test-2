@@ -148,7 +148,7 @@
             return (
                 <div className="w-fit max-w-full bg-white border border-slate-200 rounded-lg shadow-sm overflow-x-auto print:overflow-visible print:border-none print:shadow-none print-break-inside-avoid">
                     <div className={`bg-slate-100 px-3 py-2 flex items-center justify-between border-b border-slate-200 print:bg-transparent print:px-0 ${table.title ? 'print:border-b print:border-[#1e40af]' : 'print:border-none print:p-0'}`}>
-                        <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateTitle(e.currentTarget.textContent)} className={`font-bold text-sm text-blue-800 outline-none editable-cell w-auto print:text-[#1e40af] print:text-[18px] ${!table.title && readOnly ? 'hidden' : ''}`} data-placeholder={readOnly ? '' : "Table Title (Optional)"}>{table.title}</div>
+                        <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateTitle(e.currentTarget.innerText)} className={`font-bold text-sm text-blue-800 outline-none editable-cell w-auto print:text-[#1e40af] print:text-[18px] ${!table.title && readOnly ? 'hidden' : ''}`} data-placeholder={readOnly ? '' : "Table Title (Optional)"}>{table.title}</div>
                         {!readOnly && (
                             <div className="flex gap-2 print:hidden ml-4">
                                 <button onClick={addCol} className="text-[10px] bg-white border border-slate-300 text-slate-600 px-2 py-1 rounded hover:bg-slate-50">+ Col</button>
@@ -163,7 +163,7 @@
                                 <tr>
                                     {table.headers.map((h, i) => (
                                         <th key={i} className="relative group border border-slate-200 p-0 bg-slate-50 print:border print:border-[#1e40af] print:bg-blue-50/30 print-break-inside-avoid">
-                                            <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateHeader(i, e.currentTarget.textContent)} className={`editable-cell font-semibold text-slate-700 text-[12px] p-2 print:text-[#1e40af] print:font-bold print:text-[16px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="Header">{h}</div>
+                                            <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateHeader(i, e.currentTarget.innerText)} className={`editable-cell font-semibold text-slate-700 text-[12px] p-2 print:text-[#1e40af] print:font-bold print:text-[16px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="Header">{h}</div>
                                             {!readOnly && table.headers.length > 1 && ( <button onClick={() => removeCol(i)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity print:hidden text-[8px] border border-red-200 z-10"><i className="ph-bold ph-x"></i></button> )}
                                         </th>
                                     ))}
@@ -175,7 +175,7 @@
                                     <tr key={rIdx} className="group print-break-inside-avoid">
                                         {row.map((cell, cIdx) => (
                                             <td key={cIdx} className="border border-slate-200 p-0 align-top print:border print:border-[#1e40af]">
-                                                <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateCell(rIdx, cIdx, e.currentTarget.textContent)} className={`editable-cell text-slate-700 text-[12px] p-2 min-h-[32px] print:text-slate-900 print:min-h-0 print:py-1.5 print:px-2.5 print:text-[16px] ${readOnly ? 'min-h-[auto] cursor-default' : ''}`}>{cell}</div>
+                                                <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={(e) => updateCell(rIdx, cIdx, e.currentTarget.innerText)} className={`editable-cell text-slate-700 text-[12px] p-2 min-h-[32px] print:text-slate-900 print:min-h-0 print:py-1.5 print:px-2.5 print:text-[16px] ${readOnly ? 'min-h-[auto] cursor-default' : ''}`}>{cell}</div>
                                             </td>
                                         ))}
                                         {!readOnly && (
@@ -657,6 +657,8 @@
 
           const addReassessmentTable = () => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: [...prev.reassessmentTables, { id: generateId(), title: 'Reassessment and progression tracking :-', trackedMetrics: [], records: [] }] })); };
           const removeReassessmentTable = (id) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.filter(t => t.id !== id) })); };
+          
+          // CRUCIAL: Changed textContent to innerText to preserve actual line breaks correctly when typed.
           const updateReassessmentTableTitle = (tableId, newTitle) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, title: newTitle } : t) })); };
 
           const addMetricColumn = (tableId, metricObj) => { 
@@ -674,8 +676,11 @@
           const addDateRow = (tableId) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: [...t.records, { id: generateId(), date: new Date().toISOString().split('T')[0], values: {} }] } : t) })); };
           const removeDateRow = (tableId, recordId) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => t.id === tableId ? { ...t, records: t.records.filter(r => r.id !== recordId) } : t) })); };
           const updateRecordDate = (tableId, recordId, newDate) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, records: t.records.map(r => r.id === recordId ? { ...r, date: newDate } : r) }; }) })); };
+          
+          // CRUCIAL: Changed textContent to innerText to preserve actual line breaks correctly when typed.
           const updateSimpleCellValue = (tableId, recordId, metricId, value) => { if (readOnly) return; setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { if (t.id !== tableId) return t; return { ...t, records: t.records.map(rec => { if (rec.id !== recordId) return rec; return { ...rec, values: { ...rec.values, [metricId]: value } }; })}; }) })); };
           
+          // CRUCIAL: Changed textContent to innerText to preserve actual line breaks correctly when typed.
           const updateMultiFieldCellValue = (tableId, recordId, metricId, subField, value) => { 
               if (readOnly) return;
               setFormData(prev => ({ ...prev, reassessmentTables: prev.reassessmentTables.map(t => { 
@@ -889,7 +894,7 @@
                         <section key={rtable.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                           <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex-1">
-                              <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateReassessmentTableTitle(rtable.id, e.currentTarget.textContent)} className={`font-semibold text-[14px] text-indigo-800 outline-none min-w-[150px] inline-block ${readOnly ? 'border-transparent' : 'border-b border-dashed border-indigo-300 focus:border-indigo-600'}`}>{rtable.title}</div>
+                              <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateReassessmentTableTitle(rtable.id, e.currentTarget.innerText)} className={`font-semibold text-[14px] text-indigo-800 outline-none min-w-[150px] inline-block ${readOnly ? 'border-transparent' : 'border-b border-dashed border-indigo-300 focus:border-indigo-600'}`}>{rtable.title}</div>
                             </div>
                             {!readOnly && (
                                 <div className="flex gap-2">
@@ -942,8 +947,8 @@
                                              return (
                                                <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
                                                   <div className="flex h-full min-h-[32px]">
-                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'r', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.r || ''}</div></div>
-                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'l', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.l || ''}</div></div>
+                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'r', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.r || ''}</div></div>
+                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'l', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue?.l || ''}</div></div>
                                                   </div>
                                                </td>
                                              );
@@ -952,15 +957,15 @@
                                             return (
                                                <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
                                                   <div className="flex h-full min-h-[32px]">
-                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'vas', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="VAS">{cellValue?.vas || ''}</div></div>
-                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'rom', e.currentTarget.textContent)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="ROM">{cellValue?.rom || ''}</div></div>
+                                                      <div className="flex-1 border-r border-slate-200"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'vas', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="VAS">{cellValue?.vas || ''}</div></div>
+                                                      <div className="flex-1"><div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateMultiFieldCellValue(rtable.id, record.id, metric.id, 'rom', e.currentTarget.innerText)} className={`editable-cell text-center h-full p-1 min-w-[30px] ${readOnly ? 'cursor-default' : ''}`} data-placeholder="ROM">{cellValue?.rom || ''}</div></div>
                                                   </div>
                                                </td>
                                              );
                                           }
                                           return (
                                             <td key={metric.id} className="p-0 border border-slate-200 align-top bg-white">
-                                              <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateSimpleCellValue(rtable.id, record.id, metric.id, e.currentTarget.textContent)} className={`editable-cell text-center h-full min-h-[32px] p-2 ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue || ''}</div>
+                                              <div contentEditable={!readOnly} suppressContentEditableWarning onBlur={e => updateSimpleCellValue(rtable.id, record.id, metric.id, e.currentTarget.innerText)} className={`editable-cell text-center h-full min-h-[32px] p-2 ${readOnly ? 'cursor-default' : ''}`} data-placeholder="-">{cellValue || ''}</div>
                                             </td>
                                           );
                                         })}
@@ -1145,19 +1150,28 @@
                                                             {rtable.trackedMetrics.map(metric => {
                                                                 const cellValue = record.values[metric.id];
                                                                 if (metric.isBilateral && (metric.type === 'ROM' || metric.type === 'MMT')) {
-                                                                    return ( <td key={metric.id} className="p-0 border border-[#1e40af] align-top"><div className="flex h-full min-h-[32px]"><div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5">{cellValue?.r || '-'}</div><div className="flex-1 flex items-center justify-center p-1.5">{cellValue?.l || '-'}</div></div></td> );
+                                                                    return ( 
+                                                                        <td key={metric.id} className="p-0 border border-[#1e40af] align-top">
+                                                                            <div className="flex h-full min-h-[32px]">
+                                                                                <div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5 whitespace-pre-wrap">{cellValue?.r || '-'}</div>
+                                                                                <div className="flex-1 flex items-center justify-center p-1.5 whitespace-pre-wrap">{cellValue?.l || '-'}</div>
+                                                                            </div>
+                                                                        </td> 
+                                                                    );
                                                                 }
                                                                 if (metric.type === 'ROM with VAS') {
                                                                     return (
                                                                         <td key={metric.id} className="p-0 border border-[#1e40af] align-top">
                                                                             <div className="flex h-full min-h-[32px]">
-                                                                                <div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5">{cellValue?.vas || '-'}</div>
-                                                                                <div className="flex-1 flex items-center justify-center p-1.5">{cellValue?.rom || '-'}</div>
+                                                                                <div className="flex-1 border-r border-[#1e40af] flex items-center justify-center p-1.5 whitespace-pre-wrap">{cellValue?.vas || '-'}</div>
+                                                                                <div className="flex-1 flex items-center justify-center p-1.5 whitespace-pre-wrap">{cellValue?.rom || '-'}</div>
                                                                             </div>
                                                                         </td>
                                                                     );
                                                                 }
-                                                                return ( <td key={metric.id} className="p-2 border border-[#1e40af] text-center align-middle">{cellValue || '-'}</td> );
+                                                                return ( 
+                                                                    <td key={metric.id} className="p-2 border border-[#1e40af] text-center align-middle whitespace-pre-wrap">{cellValue || '-'}</td> 
+                                                                );
                                                             })}
                                                         </tr>
                                                     ))}
@@ -1261,4 +1275,3 @@
     </script>
 </body>
 </html>
-
